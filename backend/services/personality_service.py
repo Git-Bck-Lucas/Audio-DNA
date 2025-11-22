@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+from backend.services.spotify_data_helpers import extract_genres_from_artists
 
 GENRES_PERSONALITY_MAP = {
     "rock": { # Beispielwerte, wichtig hier ist, diesen Teil mit wissenschaftlichen Papern zu begründen
@@ -52,16 +53,6 @@ def calulate_personality_from_genres(genres: list) -> dict:
     for key in personality_dict.keys():
         personality_dict[key] = round(personality_dict[key]/matched_genres_count, 3)
     return personality_dict
-
-def extract_genres_from_artists(top_artists_response: dict) -> list:
-    all_genres = []
-    for artist in top_artists_response['items']: # Greife auf die Liste des Dicts zu und iteriere über diese
-        artist_genres = artist['genres']
-        all_genres.extend(artist_genres)
-    
-    unique_genres = list(set(all_genres))
-    
-    return unique_genres
     
         
 if __name__ == "__main__":

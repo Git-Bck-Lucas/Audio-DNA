@@ -3,7 +3,7 @@ from spotipy import Spotify # maybe not necessary
 
 # Service funktion aus personality_service.py 
 from backend.services.personality_service import extract_genres_from_artists, calulate_personality_from_genres
-from backend.services.feature_extraction_service import calculate_mainstream_score
+from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score
 
 router = APIRouter(
     prefix='/analysis',
@@ -16,18 +16,28 @@ async def get_personality(access_token: str) -> dict:
         auth=access_token
     )
     current_top_artists = spotify_object.current_user_top_artists()
-    extracted_genres = extract_genres_from_artists(current_top_artists)
-    personality_scores = calulate_personality_from_genres(extracted_genres)
+    
+    # Diversity als Dict
+    diversity_scores = calculate_diversity_score(current_top_artists)
+    
+    # Personality
+    personality_scores = calulate_personality_from_genres(diversity_scores["all_genres"])
+    
+    # Mainstream
     mainstream_score = calculate_mainstream_score(current_top_artists)
     return {
-        "personality": personality_scores,
-        "analysis_details": {
-            "genres_found": extracted_genres,
-            "genre_count": len(extracted_genres),
-            "artists_analyzed": len(current_top_artists['items']),
-            "mainstream_score": mainstream_score
-        }
+    "personality": personality_scores,
+    "analysis_details": {
+        "genres_found": diversity_scores["all_genres"],
+        "artists_analyzed": diversity_scores["artist_count"],  # ← Von diversity
+        "mainstream_score": mainstream_score
+    },
+    "diversity": {
+        "total_genre_count": diversity_scores["all_genres_count"],
+        "genre_clusters": diversity_scores["genres_cluster_count"],
+        "genre_cluster_dict": diversity_scores["genre_cluster_dict"]
     }
+}
     
 
 @router.get('/test')

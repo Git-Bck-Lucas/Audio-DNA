@@ -1,10 +1,18 @@
 import math 
+#from collection import Counter
 import json
+from sentence_transformers import SentenceTransformer
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics.pairwise import cosine_distances
+
 from backend.services.spotify_data_helpers import (
     extract_artist_popularities, 
     extract_follower_counts, 
     extract_genres_from_artists
 )
+
+# Global Model
+sentence_transformer_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 def calculate_mainstream_score(top_artists_response:dict) -> float:
     """
@@ -29,12 +37,74 @@ def calculate_mainstream_score(top_artists_response:dict) -> float:
     average_follower_count = math.fsum(follower_counts)/len(follower_counts)
     
     # Normalize Follower Score --> Log Scale 
-    follower_score = math.log10(average_follower_count + 1) / 6.0
+    follower_score = math.log10(average_follower_count + 1) / 6.0 # evtl. später überarbeiten
     follower_score = min(follower_score, 1.0)
     
     # Combine and Return 
     mainstream_score = (average_popularity / 100 + follower_score) / 2 #später evtl. mit Gewichtungen arbeiten
     return round(mainstream_score, 2)
+
+def cluster_genres_by_similarity(genres: list) -> dict:
+    """
+
+    Args:
+        genres (list): List of genres
+
+    Returns:
+        int: Number of Genre Clusters
+    """
+    # Context String 
+    context_genres = [f"{genre} music genre"for genre in genres]
+    embeddings = sentence_transformer_model.encode(context_genres)
+    
+    dist_matrix = cosine_distances(embeddings)
+    
+    agg = AgglomerativeClustering(
+    n_clusters=None,
+    distance_threshold=0.25,
+    metric='precomputed',
+    linkage="average"
+    )
+    
+    labels_agg =agg.fit_predict(dist_matrix)
+    cluster_dict = {}
+    for label in set(labels_agg):
+        items = [g for g, l in zip(genres, labels_agg) if l == label]
+        cluster_dict[f"cluster_{int(label)}"] = items
+    
+    #return(len(set(labels_agg))) # Unte
+    return {
+        "number_genres": len(set(labels_agg)),
+        "genres_cluster_dict": cluster_dict
+    }
+    
+    
+    
+def calculate_diversity_score(top_artists_response: dict) -> dict:
+    """
+
+    Args:
+        top_artists_response (dict): Spotify Top artists Response
+
+    Returns:
+        dict: Diversity Scores
+    """
+    all_genres = extract_genres_from_artists(top_artists_response)
+    
+    if len(all_genres) == 0:
+        return None
+    
+    cluster_result = cluster_genres_by_similarity(all_genres)
+    
+    return {
+        "all_genres": all_genres,
+        "all_genres_count": len(all_genres),
+        "genres_cluster_count": cluster_result["number_genres"],
+        "artist_count": len(top_artists_response['items']),  # ← NEU
+        "genre_cluster_dict": cluster_result["genres_cluster_dict"]
+    }
+    
+    
     
     
 if __name__ == '__main__':
@@ -161,4 +231,8 @@ if __name__ == '__main__':
     
     # extracted_genres = extract_genres_from_artists(mock_top_artists)
     
-    calculate_mainstream_score(mock_top_artists)
+    # calculate_mainstream_score(mock_top_artists)
+    
+    example_genres = ['rock', 'pop', 'acid techno', 'techno', 'trance', 'metal', 'rap', 'hip hop', 'trance']
+    
+    print(cluster_genres_by_similarity(example_genres))

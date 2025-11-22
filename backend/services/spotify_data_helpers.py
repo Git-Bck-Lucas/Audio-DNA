@@ -1,14 +1,17 @@
 import json
 
-def extract_genres_from_artists(top_artists_response: dict) -> list:
+def extract_genres_from_artists(top_artists_response: dict, unique = True) -> list:
     all_genres = []
     for artist in top_artists_response['items']: # Greife auf die Liste des Dicts zu und iteriere über diese
         artist_genres = artist['genres']
         all_genres.extend(artist_genres)
     
-    unique_genres = list(set(all_genres))
+    if unique == True:
+        unique_genres = list(set(all_genres))
+        
+        return unique_genres
     
-    return unique_genres
+    return all_genres
 
 
 def extract_artist_popularities(top_artists_response: dict) -> list:
