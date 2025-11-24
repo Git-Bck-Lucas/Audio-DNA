@@ -29,6 +29,17 @@ def extract_follower_counts(top_artists_response: dict) -> list:
     
     return all_follower_counts
         
+def extract_track_data(top_tracks_response: dict) -> dict:
+    top_tracks_summary = {}
+    for track in top_tracks_response['items']:
+         # Extrahiere: explicit, duration_ms, release_date, popularity
+         top_tracks_summary[track["name"]]= {
+             "explicit": track['explicit'],
+             "duration_ms": track['duration_ms'],
+             "release_date": track['album']['release_date'],
+             "popularity": track['popularity']
+         }
+    return top_tracks_summary
     
     
 if __name__ == '__main__':

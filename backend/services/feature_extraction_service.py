@@ -8,7 +8,8 @@ from sklearn.metrics.pairwise import cosine_distances
 from backend.services.spotify_data_helpers import (
     extract_artist_popularities, 
     extract_follower_counts, 
-    extract_genres_from_artists
+    extract_genres_from_artists,
+    extract_track_data
 )
 
 # Global Model
@@ -120,7 +121,21 @@ def calculate_diversity_score(top_artists_response: dict) -> dict:
         "shannon_entropy": round(normalized_entropy, 3)
     }
     
+def calculate_content_features(top_tracks_response: dict) -> dict:
+    track_data = extract_track_data(top_tracks_response)
     
+    # Calulate Metrics 
+    # Explicit Content Ratio (% explicit tracks)
+    # Average Song Length
+    durations = [data['duration_ms'] for data in track_data.values()]
+    average_song_length_ms = sum(durations)/len(durations)
+    # Music Age (Durchschnittsalter der Songs)
+    # Track Popularity Average
+    
+    return {
+         "average_song_length_sec": round(average_song_length_ms / 1000, 1),
+        "average_song_length_min": round(average_song_length_ms / 60_000, 2)
+    }
     
     
 if __name__ == '__main__':
