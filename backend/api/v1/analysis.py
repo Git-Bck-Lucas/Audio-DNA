@@ -35,7 +35,8 @@ async def get_personality(access_token: str) -> dict:
     "diversity": {
         "total_genre_count": diversity_scores["all_genres_count"],
         "genre_clusters": diversity_scores["genres_cluster_count"],
-        "genre_cluster_dict": diversity_scores["genre_cluster_dict"]
+        "genre_cluster_dict": diversity_scores["genre_cluster_dict"],
+        "shannon_entropy": diversity_scores["shannon_entropy"]
     }
 }
     

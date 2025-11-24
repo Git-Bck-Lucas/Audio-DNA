@@ -1,5 +1,5 @@
 import math 
-#from collection import Counter
+from collections import Counter
 import json
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
@@ -12,7 +12,8 @@ from backend.services.spotify_data_helpers import (
 )
 
 # Global Model
-sentence_transformer_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+#sentence_transformer_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+sentence_transformer_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 def calculate_mainstream_score(top_artists_response:dict) -> float:
     """
@@ -61,7 +62,7 @@ def cluster_genres_by_similarity(genres: list) -> dict:
     
     agg = AgglomerativeClustering(
     n_clusters=None,
-    distance_threshold=0.25,
+    distance_threshold=0.33,
     metric='precomputed',
     linkage="average"
     )
@@ -96,12 +97,27 @@ def calculate_diversity_score(top_artists_response: dict) -> dict:
     
     cluster_result = cluster_genres_by_similarity(all_genres)
     
+    # Shanon entropy 
+    
+    all_genres_with_duplicates = extract_genres_from_artists(top_artists_response, unique=False)
+    genre_counter = Counter(all_genres_with_duplicates)
+    total = len(all_genres_with_duplicates)
+    
+    probabilities = [count/total for count in genre_counter.values()]
+    shannon_entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
+    
+    # Normalization 
+    max_entropy = math.log2(len(genre_counter)) if len(genre_counter) > 0 else 1
+    normalized_entropy = shannon_entropy / max_entropy if max_entropy > 0 else 0
+    
+    
     return {
         "all_genres": all_genres,
         "all_genres_count": len(all_genres),
         "genres_cluster_count": cluster_result["number_genres"],
         "artist_count": len(top_artists_response['items']),  # ← NEU
-        "genre_cluster_dict": cluster_result["genres_cluster_dict"]
+        "genre_cluster_dict": cluster_result["genres_cluster_dict"],
+        "shannon_entropy": round(normalized_entropy, 3)
     }
     
     
