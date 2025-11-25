@@ -37,7 +37,7 @@ def extract_track_data(top_tracks_response: dict) -> dict:
              "explicit": track['explicit'],
              "duration_ms": track['duration_ms'],
              "release_date": track['album']['release_date'],
-             "popularity": track['popularity']
+             "popularity": track['popularity'],
          }
     return top_tracks_summary
     

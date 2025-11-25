@@ -1,6 +1,8 @@
 import math 
 from collections import Counter
 import json
+from datetime import datetime
+
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_distances
@@ -121,20 +123,35 @@ def calculate_diversity_score(top_artists_response: dict) -> dict:
         "shannon_entropy": round(normalized_entropy, 3)
     }
     
+# Optional: calculate_average() für calculate_content_features()
+    
 def calculate_content_features(top_tracks_response: dict) -> dict:
     track_data = extract_track_data(top_tracks_response)
+    if len(track_data) == 0:
+        return None
     
     # Calulate Metrics 
     # Explicit Content Ratio (% explicit tracks)
+    #explicit_data = [data['explicit'] for data in track_data.values() if data['explicit'] == True]
+    explicit_count = sum(1 for data in track_data.values() if data['explicit'])
+    explicit_ratio = explicit_count/len(track_data)
     # Average Song Length
     durations = [data['duration_ms'] for data in track_data.values()]
     average_song_length_ms = sum(durations)/len(durations)
     # Music Age (Durchschnittsalter der Songs)
+    current_year = int(datetime.now().strftime('%Y'))
+    track_ages = [current_year - int(data['release_date'].split('-')[0]) for data in track_data.values()]
+    average_song_age = sum(track_ages)/len(track_ages)
     # Track Popularity Average
+    popularities = [data['popularity'] for data in track_data.values()]
+    average_popularity = sum(popularities)/len(popularities)
     
     return {
          "average_song_length_sec": round(average_song_length_ms / 1000, 1),
-        "average_song_length_min": round(average_song_length_ms / 60_000, 2)
+        "average_song_length_min": round(average_song_length_ms / 60_000, 2),
+        "explicit_ratio": round(explicit_ratio, 2),
+        "average_song_age": round(average_song_age, 2),
+        "average_popularity": round(average_popularity, 2)
     }
     
     

@@ -35,4 +35,4 @@ Rest API starten: uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 
 Rest API im Browser öffnen: http://127.0.0.1:8000/docs
 
-Zum Spotify API login Endpoint gelangen: GET /api/v1/spotify/login
+Zum Spotify API login Endpoint gelangen: GET /api/v1/spotify/login --> http://127.0.0.1:8000/api/v1/spotify/login

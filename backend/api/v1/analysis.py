@@ -45,7 +45,10 @@ async def get_personality(access_token: str) -> dict:
     },
     "content_features": {
         "average_song_length_sec": content_features["average_song_length_sec"],
-        "average_song_length_min": content_features["average_song_length_min"]
+        "average_song_length_min": content_features["average_song_length_min"],
+        "explicit_ratio": content_features["explicit_ratio"],
+        "average_song_age": content_features["average_song_age"],
+        "average_popularity": content_features["average_popularity"]
     }
 }
     
