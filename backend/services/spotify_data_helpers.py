@@ -40,6 +40,20 @@ def extract_track_data(top_tracks_response: dict) -> dict:
              "popularity": track['popularity'],
          }
     return top_tracks_summary
+
+def extract_recently_played_data(recently_played_response: dict) -> dict:
+    recently_played_summary = {}
+
+    for track in recently_played_response['items']:
+        if track['track']['id'] in recently_played_summary:
+            recently_played_summary[track['track']['id']]['played_at'].append(track['played_at'])
+        else:
+            recently_played_summary[track['track']['id']] = {
+                "track_name": track['track']['name'],
+                "played_at": [track['played_at']] #  "played_at": "2025-11-25T19:04:41.266Z",
+            }
+            
+    return recently_played_summary
     
     
 if __name__ == '__main__':

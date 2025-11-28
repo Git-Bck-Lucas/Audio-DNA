@@ -3,7 +3,7 @@ from spotipy import Spotify # maybe not necessary
 
 # Service funktion aus personality_service.py 
 from backend.services.personality_service import extract_genres_from_artists, calulate_personality_from_genres
-from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score, calculate_content_features
+from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score, calculate_content_features, calculate_temporal_features
 
 router = APIRouter(
     prefix='/analysis',
@@ -19,11 +19,16 @@ async def get_personality(access_token: str) -> dict:
     
     current_top_tracks = spotify_object.current_user_top_tracks()
     
+    recently_played_tracks = spotify_object.current_user_recently_played(limit=50)
+    
     # Diversity als Dict
     diversity_scores = calculate_diversity_score(current_top_artists)
     
     # Concent Features 
     content_features = calculate_content_features(current_top_tracks)
+    
+    # Recently Played 
+    recently_played_tracks = calculate_temporal_features(recently_played_tracks)
     
     # Personality
     personality_scores = calulate_personality_from_genres(diversity_scores["all_genres"])
@@ -49,6 +54,10 @@ async def get_personality(access_token: str) -> dict:
         "explicit_ratio": content_features["explicit_ratio"],
         "average_song_age": content_features["average_song_age"],
         "average_popularity": content_features["average_popularity"]
+    },
+    "recently_played": {
+        "listening frequence": recently_played_tracks["listining_frequency"],
+        "repeat_ratio": recently_played_tracks["repeat_ratio"]
     }
 }
     

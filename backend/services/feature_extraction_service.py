@@ -11,7 +11,8 @@ from backend.services.spotify_data_helpers import (
     extract_artist_popularities, 
     extract_follower_counts, 
     extract_genres_from_artists,
-    extract_track_data
+    extract_track_data,
+    extract_recently_played_data
 )
 
 # Global Model
@@ -123,28 +124,26 @@ def calculate_diversity_score(top_artists_response: dict) -> dict:
         "shannon_entropy": round(normalized_entropy, 3)
     }
     
-# Optional: calculate_average() für calculate_content_features()
+def calculate_average(values: list) -> float:
+    return sum(values)/len(values) if len(values) > 0 else 0.0
+    
     
 def calculate_content_features(top_tracks_response: dict) -> dict:
     track_data = extract_track_data(top_tracks_response)
     if len(track_data) == 0:
         return None
-    
-    # Calulate Metrics 
-    # Explicit Content Ratio (% explicit tracks)
-    #explicit_data = [data['explicit'] for data in track_data.values() if data['explicit'] == True]
+
     explicit_count = sum(1 for data in track_data.values() if data['explicit'])
     explicit_ratio = explicit_count/len(track_data)
     # Average Song Length
     durations = [data['duration_ms'] for data in track_data.values()]
-    average_song_length_ms = sum(durations)/len(durations)
+    average_song_length_ms = calculate_average(durations)
     # Music Age (Durchschnittsalter der Songs)
-    current_year = int(datetime.now().strftime('%Y'))
-    track_ages = [current_year - int(data['release_date'].split('-')[0]) for data in track_data.values()]
-    average_song_age = sum(track_ages)/len(track_ages)
+    track_ages = [int(datetime.now().strftime('%Y')) - int(data['release_date'].split('-')[0]) for data in track_data.values()]
+    average_song_age = calculate_average(track_ages)
     # Track Popularity Average
     popularities = [data['popularity'] for data in track_data.values()]
-    average_popularity = sum(popularities)/len(popularities)
+    average_popularity = calculate_average(popularities)
     
     return {
          "average_song_length_sec": round(average_song_length_ms / 1000, 1),
@@ -152,6 +151,31 @@ def calculate_content_features(top_tracks_response: dict) -> dict:
         "explicit_ratio": round(explicit_ratio, 2),
         "average_song_age": round(average_song_age, 2),
         "average_popularity": round(average_popularity, 2)
+    }
+    
+def calculate_temporal_features(recently_played_response: dict) -> dict:
+    recently_played_data = extract_recently_played_data(recently_played_response)
+    if not recently_played_data or len(recently_played_data) == 0:
+        return None
+    
+    all_time_stamps = [timestamp for data in recently_played_data.values() for timestamp in data['played_at']]
+    if len(all_time_stamps) == 0:
+        return None
+    max_played_at = datetime.strptime(max(all_time_stamps), '%Y-%m-%dT%H:%M:%S.%fZ')
+    min_played_at = datetime.strptime(min(all_time_stamps), '%Y-%m-%dT%H:%M:%S.%fZ')
+    diff = max_played_at - min_played_at
+    # Repeat Behavior berechnen
+
+    unique_tracks = list(set(recently_played_data.keys()))
+    total_plays = len(all_time_stamps)
+    total_days = diff.total_seconds() / 86400
+    #metrics
+    listining_frequency = total_plays/total_days if total_plays > 0 and total_days > 0 else 0
+    repeat_ratio = (total_plays - len(unique_tracks)) / total_plays if total_plays > 0  else 0
+    
+    return {
+        "listining_frequency": listining_frequency,
+        "repeat_ratio": repeat_ratio,
     }
     
     
