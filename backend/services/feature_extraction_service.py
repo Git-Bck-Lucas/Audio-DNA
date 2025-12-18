@@ -15,50 +15,43 @@ from backend.services.spotify_data_helpers import (
     extract_recently_played_data
 )
 
-# Global Model
-#sentence_transformer_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 sentence_transformer_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 def calculate_mainstream_score(top_artists_response:dict) -> float:
     """
-    Calculate Mainstream Score based on Popularity Score and Number of Followers. 
+    Calculate mainstream score based on popularity and follower count.
     
-    Args: Spotify Top Artists Response
+    Args:
+        top_artists_response (dict): Spotify top artists response
     
-    Returns: Floatscore between 0.0 (Niche) and 1.0 (Mainstream)
+    Returns:
+        float: Score between 0.0 (niche) and 1.0 (mainstream)
     """
-    print()
     if not top_artists_response.get('items') or len(top_artists_response['items']) == 0:
-        return 0.5 # neutral
-    
-    # Extract Data mit Helper Functions 
+        return 0.5
+     
     popularities = extract_artist_popularities(top_artists_response)
     follower_counts = extract_follower_counts(top_artists_response)
     
-    # Calculate Average Popularity 
     average_popularity = math.fsum(popularities)/len(popularities)
-    
-    # Calculate Average Followers 
     average_follower_count = math.fsum(follower_counts)/len(follower_counts)
     
-    # Normalize Follower Score --> Log Scale 
-    follower_score = math.log10(average_follower_count + 1) / 6.0 # evtl. später überarbeiten
+    follower_score = math.log10(average_follower_count + 1) / 6.0
     follower_score = min(follower_score, 1.0)
     
-    # Combine and Return 
-    mainstream_score = (average_popularity / 100 + follower_score) / 2 #später evtl. mit Gewichtungen arbeiten
+    mainstream_score = (average_popularity / 100 + follower_score) / 2
     return round(mainstream_score, 2)
 
 def cluster_genres_by_similarity(genres: list) -> dict:
     """
+    Cluster genres by semantic similarity.
 
     Args:
         genres (list): List of genres
 
     Returns:
-        int: Number of Genre Clusters
+        dict: Number of clusters and cluster dictionary
     """
-    # Context String 
     context_genres = [f"{genre} music genre"for genre in genres]
     embeddings = sentence_transformer_model.encode(context_genres)
     
@@ -77,7 +70,6 @@ def cluster_genres_by_similarity(genres: list) -> dict:
         items = [g for g, l in zip(genres, labels_agg) if l == label]
         cluster_dict[f"cluster_{int(label)}"] = items
     
-    #return(len(set(labels_agg))) # Unte
     return {
         "number_genres": len(set(labels_agg)),
         "genres_cluster_dict": cluster_dict
@@ -87,12 +79,13 @@ def cluster_genres_by_similarity(genres: list) -> dict:
     
 def calculate_diversity_score(top_artists_response: dict) -> dict:
     """
+    Calculate diversity metrics for music taste.
 
     Args:
-        top_artists_response (dict): Spotify Top artists Response
+        top_artists_response (dict): Spotify top artists response
 
     Returns:
-        dict: Diversity Scores
+        dict: Diversity scores including entropy and clusters
     """
     all_genres = extract_genres_from_artists(top_artists_response)
     
@@ -101,16 +94,12 @@ def calculate_diversity_score(top_artists_response: dict) -> dict:
     
     cluster_result = cluster_genres_by_similarity(all_genres)
     
-    # Shanon entropy 
-    
     all_genres_with_duplicates = extract_genres_from_artists(top_artists_response, unique=False)
     genre_counter = Counter(all_genres_with_duplicates)
     total = len(all_genres_with_duplicates)
     
     probabilities = [count/total for count in genre_counter.values()]
-    shannon_entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
-    
-    # Normalization 
+    shannon_entropy = -sum(p * math.log2(p) for p in probabilities if p > 0) 
     max_entropy = math.log2(len(genre_counter)) if len(genre_counter) > 0 else 1
     normalized_entropy = shannon_entropy / max_entropy if max_entropy > 0 else 0
     
@@ -119,7 +108,7 @@ def calculate_diversity_score(top_artists_response: dict) -> dict:
         "all_genres": all_genres,
         "all_genres_count": len(all_genres),
         "genres_cluster_count": cluster_result["number_genres"],
-        "artist_count": len(top_artists_response['items']),  # ← NEU
+        "artist_count": len(top_artists_response['items']),
         "genre_cluster_dict": cluster_result["genres_cluster_dict"],
         "shannon_entropy": round(normalized_entropy, 3)
     }
@@ -135,13 +124,12 @@ def calculate_content_features(top_tracks_response: dict) -> dict:
 
     explicit_count = sum(1 for data in track_data.values() if data['explicit'])
     explicit_ratio = explicit_count/len(track_data)
-    # Average Song Length
+    
     durations = [data['duration_ms'] for data in track_data.values()]
     average_song_length_ms = calculate_average(durations)
-    # Music Age (Durchschnittsalter der Songs)
+    
     track_ages = [int(datetime.now().strftime('%Y')) - int(data['release_date'].split('-')[0]) for data in track_data.values()]
     average_song_age = calculate_average(track_ages)
-    # Track Popularity Average
     popularities = [data['popularity'] for data in track_data.values()]
     average_popularity = calculate_average(popularities)
     
@@ -164,23 +152,21 @@ def calculate_temporal_features(recently_played_response: dict) -> dict:
     max_played_at = datetime.strptime(max(all_time_stamps), '%Y-%m-%dT%H:%M:%S.%fZ')
     min_played_at = datetime.strptime(min(all_time_stamps), '%Y-%m-%dT%H:%M:%S.%fZ')
     diff = max_played_at - min_played_at
-    # Repeat Behavior berechnen
-
+    
     unique_tracks = list(set(recently_played_data.keys()))
     total_plays = len(all_time_stamps)
     total_days = diff.total_seconds() / 86400
-    #metrics
+    
     listining_frequency = total_plays/total_days if total_plays > 0 and total_days > 0 else 0
     repeat_ratio = (total_plays - len(unique_tracks)) / total_plays if total_plays > 0  else 0
     
     return {
-        "listining_frequency": listining_frequency,
-        "repeat_ratio": repeat_ratio,
+        "listening_frequency": round(listining_frequency, 3),
+        "repeat_ratio": round(repeat_ratio, 3),
     }
     
     
 if __name__ == '__main__':
-    
     mock_top_artists_string = """
     {
         "items": [
@@ -299,11 +285,6 @@ if __name__ == '__main__':
     """
     
     mock_top_artists = json.loads(mock_top_artists_string)
-    
-    
-    # extracted_genres = extract_genres_from_artists(mock_top_artists)
-    
-    # calculate_mainstream_score(mock_top_artists)
     
     example_genres = ['rock', 'pop', 'acid techno', 'techno', 'trance', 'metal', 'rap', 'hip hop', 'trance']
     

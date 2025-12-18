@@ -3,8 +3,8 @@ import json
 from backend.services.spotify_data_helpers import extract_genres_from_artists
 
 GENRES_PERSONALITY_MAP = {
-    "rock": { # Beispielwerte, wichtig hier ist, diesen Teil mit wissenschaftlichen Papern zu begründen
-        "openness": 0.8, # 0 niedrig bis 1 hoch
+    "rock": {
+        "openness": 0.8,
         "conscientiousness": 0.5,
         "extraversion": 0.7,
         "agreeableness": 0.4,
@@ -29,23 +29,22 @@ GENRES_PERSONALITY_MAP = {
 
 def calulate_personality_from_genres(genres: list) -> dict:
     """
+    Calculate personality traits from music genres.
 
     Args:
-        genres (list): List of Music Genres 
+        genres (list): List of music genres
 
     Returns:
-        dict: Dictionary with average Big 5 Scores based on Music Genres
+        dict: Dictionary with average Big 5 scores based on music genres
     """
     if not genres:
         return {}
     TRAITS = ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"]
-    # Dictionary Comprehenision 
     personality_dict = {trait: 0.0 for trait in TRAITS}
     matched_genres_count = 0
     for genre in genres:
         if genre in GENRES_PERSONALITY_MAP:
             matched_genres_count += 1
-            print("Genre: ", genre)
             for key in GENRES_PERSONALITY_MAP[genre].keys():
                 personality_dict[key] += GENRES_PERSONALITY_MAP[genre][key]
     if matched_genres_count == 0:
@@ -56,15 +55,6 @@ def calulate_personality_from_genres(genres: list) -> dict:
     
         
 if __name__ == "__main__":
-    
-    #genres = ['techno', 'pop', 'rap']
-    
-    #result = calulate_personality_from_genres(genres)
-    
-    #print(result)
-    
-    # Mock Spotify Response (realistisch!)
-    # Hierher echten Spotify Response kopieren, besser zum testen
     mock_top_artists_string = """
     {
         "items": [

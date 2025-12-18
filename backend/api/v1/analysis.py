@@ -1,9 +1,9 @@
 from fastapi import APIRouter
-from spotipy import Spotify # maybe not necessary 
-
-# Service funktion aus personality_service.py 
+from spotipy import Spotify 
 from backend.services.personality_service import extract_genres_from_artists, calulate_personality_from_genres
+from backend.services.llm_personality_service import analyze_personality_with_llm
 from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score, calculate_content_features, calculate_temporal_features
+from backend.services.spotify_data_helpers import extract_top_artists_names
 
 router = APIRouter(
     prefix='/analysis',
@@ -21,25 +21,26 @@ async def get_personality(access_token: str) -> dict:
     
     recently_played_tracks = spotify_object.current_user_recently_played(limit=50)
     
-    # Diversity als Dict
     diversity_scores = calculate_diversity_score(current_top_artists)
-    
-    # Concent Features 
     content_features = calculate_content_features(current_top_tracks)
-    
-    # Recently Played 
-    recently_played_tracks = calculate_temporal_features(recently_played_tracks)
-    
-    # Personality
-    personality_scores = calulate_personality_from_genres(diversity_scores["all_genres"])
-    
-    # Mainstream
+    temporal_features = calculate_temporal_features(recently_played_tracks)
     mainstream_score = calculate_mainstream_score(current_top_artists)
+    extracted_artist_names = extract_top_artists_names(current_top_artists)
+    
+    personality_scores = analyze_personality_with_llm(
+        genres=diversity_scores["all_genres"],
+        mainstream_score=mainstream_score,
+        top_artists=extracted_artist_names,
+        diversity_scores=diversity_scores,
+        content_features=content_features,
+        temporal_features=temporal_features
+    )
     return {
     "personality": personality_scores,
     "analysis_details": {
+        "top_artists": extracted_artist_names,
         "genres_found": diversity_scores["all_genres"],
-        "artists_analyzed": diversity_scores["artist_count"],  # ← Von diversity
+        "artists_analyzed": diversity_scores["artist_count"],
         "mainstream_score": mainstream_score
     },
     "diversity": {
@@ -56,8 +57,8 @@ async def get_personality(access_token: str) -> dict:
         "average_popularity": content_features["average_popularity"]
     },
     "recently_played": {
-        "listening frequence": recently_played_tracks["listining_frequency"],
-        "repeat_ratio": recently_played_tracks["repeat_ratio"]
+        "listening frequence": temporal_features["listening_frequency"],
+        "repeat_ratio": temporal_features["repeat_ratio"]
     }
 }
     

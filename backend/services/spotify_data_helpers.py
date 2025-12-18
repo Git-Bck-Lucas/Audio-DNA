@@ -2,7 +2,7 @@ import json
 
 def extract_genres_from_artists(top_artists_response: dict, unique = True) -> list:
     all_genres = []
-    for artist in top_artists_response['items']: # Greife auf die Liste des Dicts zu und iteriere über diese
+    for artist in top_artists_response['items']:
         artist_genres = artist['genres']
         all_genres.extend(artist_genres)
     
@@ -20,6 +20,10 @@ def extract_artist_popularities(top_artists_response: dict) -> list:
         all_popularity_scores.append(artist['popularity'])
     
     return all_popularity_scores
+
+
+def extract_top_artists_names(top_artists_response: dict) -> list:
+    return [artist['name'] for artist in top_artists_response['items']]
     
     
 def extract_follower_counts(top_artists_response: dict) -> list:
@@ -32,7 +36,6 @@ def extract_follower_counts(top_artists_response: dict) -> list:
 def extract_track_data(top_tracks_response: dict) -> dict:
     top_tracks_summary = {}
     for track in top_tracks_response['items']:
-         # Extrahiere: explicit, duration_ms, release_date, popularity
          top_tracks_summary[track["name"]]= {
              "explicit": track['explicit'],
              "duration_ms": track['duration_ms'],
@@ -50,14 +53,13 @@ def extract_recently_played_data(recently_played_response: dict) -> dict:
         else:
             recently_played_summary[track['track']['id']] = {
                 "track_name": track['track']['name'],
-                "played_at": [track['played_at']] #  "played_at": "2025-11-25T19:04:41.266Z",
+                "played_at": [track['played_at']]
             }
             
     return recently_played_summary
     
     
 if __name__ == '__main__':
-    
     mock_top_artists_string = """
     {
         "items": [
@@ -176,9 +178,6 @@ if __name__ == '__main__':
     """
     
     mock_top_artists = json.loads(mock_top_artists_string)
-    
-    
-    # extracted_genres = extract_genres_from_artists(mock_top_artists)
     
     follower_counts = extract_follower_counts(mock_top_artists)
     

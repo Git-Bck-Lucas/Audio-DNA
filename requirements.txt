@@ -1,0 +1,19 @@
+# API Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Spotify Integration
+spotipy==2.23.0
+
+# Configuration
+python-dotenv==1.1.0
+pydantic==2.11.7
+pydantic-settings==2.1.0
+
+# LLM Integration
+anthropic==0.64.0
+
+# ML/Feature Extraction
+sentence-transformers==2.2.0
+scikit-learn==1.2.2
+numpy==1.24.3
