@@ -98,13 +98,12 @@ def analyze_personality_with_llm(
     if json_match:
         json_str = json_match.group(1)
         personality_scores = json.loads(json_str)
-        
         reasoning = response_text.split('```')[-1].strip()
         if reasoning.startswith('**Reasoning:**'):
             reasoning = reasoning.replace('**Reasoning:**', '').strip()
-        else:
-            personality_scores = json.loads(response_text)
-            reasoning = None
+    else:
+        personality_scores = json.loads(response_text)
+        reasoning = None
     
     return {
         **personality_scores,

@@ -3,69 +3,69 @@ from httpx import AsyncClient, ASGITransport # Http Client für API Tests
 from unittest.mock import patch, MagicMock  # Ersetzt Funktionen/Objekte temporär
 from backend.main import app
 
-def test_imports():
-    assert app is not None
-    
-def test_get_personality_endpoint():
-    # Mock Current User Top Artists 
-    
-    # Mock Current User Top Tracks 
-    
-    # Mock Current User Recently Played 
-    
-    # Mock Analyze Personality with LLM 
-
-
-"""
-    @router.get('/get_personality')
-async def get_personality(access_token: str) -> dict: 
-    spotify_object = Spotify(
-        auth=access_token
-    )
-    current_top_artists = spotify_object.current_user_top_artists()
-    
-    current_top_tracks = spotify_object.current_user_top_tracks()
-    
-    recently_played_tracks = spotify_object.current_user_recently_played(limit=50)
-    
-    diversity_scores = calculate_diversity_score(current_top_artists)
-    content_features = calculate_content_features(current_top_tracks)
-    temporal_features = calculate_temporal_features(recently_played_tracks)
-    mainstream_score = calculate_mainstream_score(current_top_artists)
-    extracted_artist_names = extract_top_artists_names(current_top_artists)
-    
-    personality_scores = analyze_personality_with_llm(
-        genres=diversity_scores["all_genres"],
-        mainstream_score=mainstream_score,
-        top_artists=extracted_artist_names,
-        diversity_scores=diversity_scores,
-        content_features=content_features,
-        temporal_features=temporal_features
-    )
-    return {
-    "personality": personality_scores,
-    "analysis_details": {
-        "top_artists": extracted_artist_names,
-        "genres_found": diversity_scores["all_genres"],
-        "artists_analyzed": diversity_scores["artist_count"],
-        "mainstream_score": mainstream_score
-    },
-    "diversity": {
-        "total_genre_count": diversity_scores["all_genres_count"],
-        "genre_clusters": diversity_scores["genres_cluster_count"],
-        "genre_cluster_dict": diversity_scores["genre_cluster_dict"],
-        "shannon_entropy": diversity_scores["shannon_entropy"]
-    },
-    "content_features": {
-        "average_song_length_sec": content_features["average_song_length_sec"],
-        "average_song_length_min": content_features["average_song_length_min"],
-        "explicit_ratio": content_features["explicit_ratio"],
-        "average_song_age": content_features["average_song_age"],
-        "average_popularity": content_features["average_popularity"]
-    },
-    "recently_played": {
-        "listening frequence": temporal_features["listening_frequency"],
-        "repeat_ratio": temporal_features["repeat_ratio"]
+@pytest.mark.asyncio # sagt pytest: Das ist ein async test
+@patch('backend.api.v1.analysis.Spotify') # Ersetzt spotify klasse
+@patch('backend.api.v1.analysis.analyze_personality_with_llm') # Ersetzt LLM Funktion
+async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class):
+    """Test erfolgreicher API Call mit gemockten Spotify Daten"""
+    # simuliert spotify api response
+    mock_artists = {
+        "items": [
+            {
+                "name": "AC/DC",
+                "genres": ["rock", "hard rock"],
+                "popularity": 80,
+                "followers": {"total": 5000000}
+            }
+        ]
     }
-}
-"""
+    
+    mock_tracks = {
+        "items": [
+            {
+                "name": "Song 1",
+                "explicit": False,
+                "duration_ms": 240000,
+                "popularity": 80,
+                "album": {"release_date": "2020-05-15"}
+            }
+        ]
+    }
+    
+    mock_recently_played = {
+        "items": [
+            {
+                "track": {"id": "track1", "name": "Song 1"},
+                "played_at": "2024-01-01T10:00:00.000Z"
+            }
+        ]
+    }
+    
+    mock_spotify_instance = MagicMock() # Fake spotify object, hat automatisch alle Methoden/Attribute die du brauchst
+    mock_spotify_instance.current_user_top_artists.return_value = mock_artists
+    mock_spotify_instance.current_user_top_tracks.return_value = mock_tracks
+    mock_spotify_instance.current_user_recently_played.return_value = mock_recently_played
+    mock_spotify_class.return_value = mock_spotify_instance
+    
+    mock_llm.return_value = {
+        "openness": 0.8,
+        "conscientiousness": 0.6,
+        "extraversion": 0.7,
+        "agreeableness": 0.5,
+        "neuroticism": 0.4,
+        "reasoning": "Test reasoning"
+    }
+    
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as client:
+        response = await client.get(
+            "/api/v1/analysis/get_personality",
+            params={"access_token": "test_token"}
+        )
+        
+    assert response.status_code == 200
+    data = response.json()
+    assert "personality" in data
+    assert data["personality"]["openness"] == 0.8

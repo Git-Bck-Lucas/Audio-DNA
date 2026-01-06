@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 from spotipy import Spotify 
-from backend.services.personality_service import extract_genres_from_artists, calulate_personality_from_genres
 from backend.services.llm_personality_service import analyze_personality_with_llm
 from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score, calculate_content_features, calculate_temporal_features
 from backend.services.spotify_data_helpers import extract_top_artists_names
