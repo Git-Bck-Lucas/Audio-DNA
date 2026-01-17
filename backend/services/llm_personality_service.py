@@ -3,6 +3,8 @@ from backend.config import settings
 import json
 import re
 
+from backend.logging_config import logger
+
 client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 def analyze_personality_with_llm(
@@ -13,6 +15,7 @@ def analyze_personality_with_llm(
     content_features: dict,
     temporal_features: dict
 ) -> dict:
+    logger.info("Starting LLM Analysis")
     music_profile = {
         "genres": genres,
         "mainstream_score": mainstream_score,
@@ -80,42 +83,47 @@ def analyze_personality_with_llm(
     "neuroticism": 0.0-1.0
     }}
     """
-    
-    message = client.messages.create(
-        model="claude-opus-4-5-20251101",
-        max_tokens=1024,
-        messages = [{"role": "user", "content": prompt}]
-    )
-    input_tokens = message.usage.input_tokens
-    output_tokens = message.usage.output_tokens
-    
-    input_costs = input_tokens * 0.000005
-    output_costs = output_tokens * 0.000025
-    total_costs = input_costs + output_costs
-    
-    response_text = message.content[0].text
-    json_match = re.search(r'```json\s*(\{.*?\})\s*```', response_text, re.DOTALL)
-    if json_match:
-        json_str = json_match.group(1)
-        personality_scores = json.loads(json_str)
-        reasoning = response_text.split('```')[-1].strip()
-        if reasoning.startswith('**Reasoning:**'):
-            reasoning = reasoning.replace('**Reasoning:**', '').strip()
-    else:
-        personality_scores = json.loads(response_text)
-        reasoning = None
-    
-    return {
-        **personality_scores,
-        "reasoning": reasoning,
-        "api_usage": {
-            "model": "claude-opus-4-5-20251101",
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "total_tokens": input_tokens + output_tokens,
-            "estimated_cost_usd": round(total_costs, 6)
+    try:
+        message = client.messages.create(
+            model="claude-opus-4-5-20251101",
+            max_tokens=1024,
+            messages = [{"role": "user", "content": prompt}]
+        )
+        input_tokens = message.usage.input_tokens
+        output_tokens = message.usage.output_tokens
+        
+        input_costs = input_tokens * 0.000005
+        output_costs = output_tokens * 0.000025
+        total_costs = input_costs + output_costs
+        logger.info(f"Cost: {total_costs}")
+        
+        response_text = message.content[0].text
+        json_match = re.search(r'```json\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+            personality_scores = json.loads(json_str)
+            reasoning = response_text.split('```')[-1].strip()
+            if reasoning.startswith('**Reasoning:**'):
+                reasoning = reasoning.replace('**Reasoning:**', '').strip()
+        else:
+            logger.warning('No Json block found in Claude Response')
+            personality_scores = json.loads(response_text)
+            reasoning = None
+        
+        return {
+            **personality_scores,
+            "reasoning": reasoning,
+            "api_usage": {
+                "model": "claude-opus-4-5-20251101",
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "total_tokens": input_tokens + output_tokens,
+                "estimated_cost_usd": round(total_costs, 6)
+            }
         }
-    }
+    except Exception as e:
+        logger.error(f'Analysis failed: {e}')
+        raise
     
     
 if __name__ == "__main__":
