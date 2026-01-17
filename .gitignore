@@ -3,7 +3,9 @@ __pycache__/
 *.pyc
 .env
 .cache/
+.cache
 *.egg-info/
 .pytest_cache/
 test_scripts/
 docker-compose.yml
+logs/
