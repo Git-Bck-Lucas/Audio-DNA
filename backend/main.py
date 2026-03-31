@@ -21,9 +21,9 @@ app.add_middleware(
 logger.debug('CORS middleware configured')
 
 app.include_router(spotify_router, prefix="/api/v1")
-logger.info('Spotify router registered')
+#logger.info('Spotify router registered')
 app.include_router(analysis_router, prefix='/api/v1')
-logger.info('Analysis Router registered')
+#logger.info('Analysis Router registered')
 
 @app.get("/")
 async def root():

@@ -5,6 +5,10 @@ class Settings(BaseSettings):
     SPOTIFY_CLIENT_SECRET: str
     SPOTIFY_REDIRECT_URI: str = "http://127.0.0.1:8000/callback"
     ANTHROPIC_API_KEY: str
+    DATABASE_URL: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
     
     class Config:
         env_file = ".env"

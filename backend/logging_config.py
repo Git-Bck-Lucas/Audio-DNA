@@ -7,7 +7,9 @@ def setup_logging():
     env = os.getenv("ENV", "development")
 
     console_handler = logging.StreamHandler() # Objekt das Logging auf Konsole ausgibt
-    console_handler.setLevel(logging.DEBUG) # Mit Level DEBUG
+    console_handler.setLevel(logging.INFO) # Mit Level DEBUG
+    
+    os.makedirs("logs", exist_ok=True)
 
     file_handler = logging.FileHandler("logs/app.log") # Objekt das Logging in einer Datei ausgibt
     file_handler.setLevel(logging.ERROR) # Mit Level Error
