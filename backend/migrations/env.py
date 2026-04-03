@@ -7,6 +7,7 @@ from alembic import context
 
 from backend.config import settings
 from backend.db.database import Base
+from backend.db import models
 
 
 # this is the Alembic Config object, which provides

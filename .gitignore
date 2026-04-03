@@ -9,3 +9,4 @@ __pycache__/
 test_scripts/
 docker-compose.yml
 logs/
+.DS_Store

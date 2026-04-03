@@ -1,8 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
+from datetime import datetime
+
+from sqlalchemy.orm import Session
 
 from backend.config import settings
+from backend.db.session import get_db
+from backend.db.repository import get_user_by_spotify_id, create_user
 # Router for everything which is connected to spotify 
 # All endpoints get /spotify
 
@@ -35,7 +40,8 @@ async def login():
 
 
 @router.get("/callback") # Nach Zustimmung
-async def callback(code: str):
+async def callback(code: str, db: Session = Depends(get_db)): # Sage FastAPI: Führe get_db aus und gib mir das Ergebnis als db -> rugt get_db() auf 
+    #-> öffnet sessoin und gibt sie per yield zurück, fast api übergibt session als db an endpoint
     spotify_o_auth = SpotifyOAuth(
         client_id=settings.SPOTIFY_CLIENT_ID,
         client_secret=settings.SPOTIFY_CLIENT_SECRET,
@@ -43,8 +49,19 @@ async def callback(code: str):
         scope='user-top-read user-read-recently-played playlist-read-private user-library-read' 
     )
     token_dict = spotify_o_auth.get_access_token(code) # Nimmt den Code und tauscht ihn gegen Token
+    sp = Spotify(auth=token_dict["access_token"])
+    spotify_profile = sp.current_user()
+    spotify_user_id = spotify_profile["id"]
+    access_token = token_dict["access_token"]
+    refresh_token = token_dict["refresh_token"]
+    token_expires_at = datetime.fromtimestamp(token_dict["expires_at"])
     
-    return token_dict
+    user = get_user_by_spotify_id(db, spotify_user_id)
+    
+    if user is None:
+        user = create_user(db, spotify_user_id, access_token, refresh_token, token_expires_at)
+    
+    return user
 
 @router.get("/top-tracks")
 async def get_top_tracks(access_token: str):
