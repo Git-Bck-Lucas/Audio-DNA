@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from backend.config import settings
+from backend.api.v1.schemas import UserResponse
 from backend.db.session import get_db
 from backend.db.repository import get_user_by_spotify_id, create_user
 # Router for everything which is connected to spotify 
@@ -39,7 +40,7 @@ async def login():
     # return url 
 
 
-@router.get("/callback") # Nach Zustimmung
+@router.get("/callback", response_model=UserResponse) # Nach Zustimmung
 async def callback(code: str, db: Session = Depends(get_db)): # Sage FastAPI: Führe get_db aus und gib mir das Ergebnis als db -> rugt get_db() auf 
     #-> öffnet sessoin und gibt sie per yield zurück, fast api übergibt session als db an endpoint
     spotify_o_auth = SpotifyOAuth(
