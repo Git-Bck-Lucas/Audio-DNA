@@ -6,3 +6,9 @@ class UserResponse(BaseModel):
     created_at: datetime
     
     model_config = {"from_attributes": True}
+    
+class AnalysisResponse(BaseModel):
+    user_id: int
+    result: dict
+    
+    model_config = {"from_attributes": True}

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from backend.config import settings
 from backend.api.v1.schemas import UserResponse
 from backend.db.session import get_db
-from backend.db.repository import get_user_by_spotify_id, create_user
+from backend.db.repository import get_user_by_spotify_id, create_user, update_user_tokens
 # Router for everything which is connected to spotify 
 # All endpoints get /spotify
 
@@ -61,7 +61,9 @@ async def callback(code: str, db: Session = Depends(get_db)): # Sage FastAPI: FÃ
     
     if user is None:
         user = create_user(db, spotify_user_id, access_token, refresh_token, token_expires_at)
-    
+    else:
+        user = update_user_tokens(db, user, access_token, refresh_token, token_expires_at)
+        
     return user
 
 @router.get("/top-tracks")
