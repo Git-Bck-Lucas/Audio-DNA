@@ -8,7 +8,9 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
     
 class AnalysisResponse(BaseModel):
+    id: int
     user_id: int
     result: dict
+    created_at: datetime
     
     model_config = {"from_attributes": True}

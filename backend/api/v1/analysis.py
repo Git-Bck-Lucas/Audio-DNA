@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from spotipy import Spotify 
 from backend.services.llm_personality_service import analyze_personality_with_llm
 from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score, calculate_content_features, calculate_temporal_features
@@ -8,7 +8,7 @@ from backend.api.v1.schemas import AnalysisResponse
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.db.repository import get_user_by_spotify_id, create_analysis
+from backend.db.repository import get_user_by_spotify_id, create_analysis, create_user
 
 import logging
 
@@ -20,13 +20,15 @@ router = APIRouter(
 )
 
 @router.get('/get_personality', response_model=AnalysisResponse)
-async def get_personality(access_token: str, spotify_user_id:str, db: Session = Depends(get_db)) -> dict: 
+async def get_personality(access_token: str, spotify_user_id:str, db: Session = Depends(get_db)) -> AnalysisResponse: 
     logger.info("Starting Personality Analysis Request ")
     try:
         spotify_object = Spotify(
             auth=access_token
         )
         user = get_user_by_spotify_id(db, spotify_user_id)
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
         
         current_top_artists = spotify_object.current_user_top_artists()
         
