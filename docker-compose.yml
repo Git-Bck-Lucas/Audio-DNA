@@ -7,6 +7,11 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   db:
     image: postgres:16
     env_file:
