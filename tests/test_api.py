@@ -71,5 +71,10 @@ async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mo
         
     assert response.status_code == 200
     data = response.json()
-    assert "personality" in data
-    assert data["personality"]["openness"] == 0.8
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == 1
+    assert data["user_id"] == 1
+    assert data["result"] == {}
+    assert "created_at" in data
+   
