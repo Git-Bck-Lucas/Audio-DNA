@@ -4,8 +4,22 @@ on:
     branches:
       - main
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Python 
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Requirements
+        run: pip install -r requirements.txt
+      - name: Pytest
+        run: pytest
   deploy:
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Deploy to server
         uses: appleboy/ssh-action@v1
