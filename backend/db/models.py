@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import JSONB
+from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from backend.db.database import Base
 
@@ -18,3 +19,13 @@ class Analysis(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     result = Column(JSONB, nullable=False)
     created_at =Column(DateTime, default=datetime.utcnow)
+    
+class Chunks(Base):
+    __tablename__ = "chunks"
+
+    id = Column(Integer, primary_key=True)
+    source = Column(String(255), nullable=False)
+    author = Column(String(255), nullable=False)
+    chunk_index = Column(Integer, nullable=False)
+    text = Column(Text, nullable=False)
+    embedding = Column(Vector(384), nullable=False)

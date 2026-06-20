@@ -1,7 +1,7 @@
 import fitz 
 from pathlib import Path
 
-def load_document(file_path: str) -> str:
+def load_documents(file_path: str) -> str:
     path = Path(file_path)
     
     if not path.exists():
@@ -36,6 +36,6 @@ def _load_markdown(path: Path) -> str:
     return path.read_text()
     
 if __name__ == "__main__":
-    text = load_document("backend/rag/documents/Schaefer_Mehlhorn_2017.md")
+    text = load_documents("backend/rag/documents/Schaefer_Mehlhorn_2017.md")
     print(f"Loaded {len(text)} characters")
     print(text[:500])  # Erste 500 Zeichen als Sanity Check

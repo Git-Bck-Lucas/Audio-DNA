@@ -1,5 +1,3 @@
-from load_documents import load_document
-
 def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> list[str]:
     """Split text into overlapping chunks.
     
@@ -41,8 +39,9 @@ def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> list[st
     
     return chunks
 
+""""
 if __name__ == "__main__":
-    text = load_document("backend/rag/documents/Schaefer_Mehlhorn_2017.md")
+    text = load_documents("backend/rag/documents/Schaefer_Mehlhorn_2017.md")
     chunks = chunk_text(text)
     for i, chunk in enumerate(chunks[:3]):
        for i in range(min(3, len(chunks) - 1)):
@@ -51,3 +50,4 @@ if __name__ == "__main__":
         print(f"--- Anfang Chunk {i+1} ---")
         print(chunks[i+1][:150])
         print()
+"""
