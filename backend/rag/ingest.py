@@ -4,6 +4,7 @@ from pathlib import Path
 from backend.rag.load_documents import load_documents
 from backend.rag.chunking import chunk_text
 from backend.rag.embed import embed_text
+from backend.rag.chunk_tagging import tag_chunk
 from backend.db.database import SessionLocal
 from backend.db.models import Chunks
 from backend.db.repository import replace_chunks
@@ -27,12 +28,15 @@ def ingest_documents(documents_dir: str):
         chunks = chunk_text(text)
         for i, chunk in enumerate(chunks):                 # i -> chunk_index
             embedding = embed_text(chunk)
+            dimensions, traits = tag_chunk(chunk)          # lexikalisches Metadaten-Tagging
             all_chunks.append(Chunks(
                 source=source,
                 author=author,
                 chunk_index=i,
                 text=chunk,
                 embedding=embedding,                       # pgvector nimmt die Liste direkt
+                dimensions=dimensions,
+                traits=traits,
             ))
         print(f"File: {file.name} -> {len(chunks)} chunks")
 

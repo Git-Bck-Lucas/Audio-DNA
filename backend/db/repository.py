@@ -32,3 +32,41 @@ def replace_chunks(db: Session, chunks: list[Chunks]) -> None:
     db.query(Chunks).delete()
     db.add_all(chunks)
     db.commit()
+    
+def search_similar_chunks(
+    db: Session,
+    query_vector: list[float],
+    top_k: int = 5,
+    dimension: str | None = None,
+    trait: str | None = None,
+) -> list[tuple[Chunks, float]]:
+    """Findet die top_k ähnlichsten Chunks und gibt je (Chunk, Similarity) zurück.
+
+    pgvector liefert eine Cosinus-DISTANZ (0 = identisch, 2 = gegensätzlich). Wir geben
+    stattdessen die intuitivere Similarity = 1 - Distanz zurück (1.0 = perfekt, 0.0 = orthogonal),
+    damit sich Treffer verschiedener Query-Strategien direkt vergleichen lassen.
+
+    Hybrid-Retrieval: Mit `dimension` und/oder `trait` wird die Vektorsuche VORHER auf Chunks
+    eingeschränkt, die im Metadaten-Tag die jeweilige Dimension/den Trait tragen ("wert = ANY(spalte)").
+    So verschwinden die generischen Chunks, die bei reiner Vektorsuche für jede Dimension oben landen.
+    """
+    distance = Chunks.embedding.cosine_distance(query_vector)
+    query = db.query(Chunks, distance.label("distance"))
+    if dimension is not None:
+        query = query.filter(Chunks.dimensions.any(dimension))
+    if trait is not None:
+        query = query.filter(Chunks.traits.any(trait))
+    rows = query.order_by(distance).limit(top_k).all()
+    return [(chunk, 1.0 - distance_value) for chunk, distance_value in rows]
+
+if __name__ == "__main__":
+    # Kurzer Smoke-Test der Score-Rückgabe. Für den vollen Strategie-Vergleich:
+    #   python -m backend.rag.compare_query_strategies
+    from backend.db.database import SessionLocal
+    from backend.rag.dimension_queries import centroid_query
+
+    with SessionLocal() as db:
+        for dim in ("Sophisticated", "Contemporary"):
+            print(f"\n=== {dim} (stem-centroid) ===")
+            for chunk, score in search_similar_chunks(db, centroid_query(dim), top_k=7):
+                print(f"  sim={score:.3f}  [{chunk.source}] {chunk.text[:80]}...")

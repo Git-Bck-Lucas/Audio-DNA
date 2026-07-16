@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from backend.db.database import Base
@@ -29,3 +29,8 @@ class Chunks(Base):
     chunk_index = Column(Integer, nullable=False)
     text = Column(Text, nullable=False)
     embedding = Column(Vector(384), nullable=False)
+    # Metadaten fürs Hybrid-Retrieval: lexikalisch getaggte MUSIC-Dimensionen und Big-Five-Traits
+    # (befüllt beim Ingest via backend.rag.chunk_tagging). Ein Chunk kann zu mehreren gehören
+    # oder zu keiner (dann leere Liste) -> Postgres-ARRAY, filterbar per "wert = ANY(spalte)".
+    dimensions = Column(ARRAY(String), nullable=False, default=list)
+    traits = Column(ARRAY(String), nullable=False, default=list)
