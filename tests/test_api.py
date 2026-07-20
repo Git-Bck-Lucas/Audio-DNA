@@ -4,11 +4,13 @@ from unittest.mock import patch, MagicMock  # Ersetzt Funktionen/Objekte tempor√
 from backend.main import app
 
 @pytest.mark.asyncio # sagt pytest: Das ist ein async test
+@patch('backend.api.v1.analysis.format_grounding_context')
+@patch('backend.api.v1.analysis.retrieve_grounding_context')
 @patch('backend.api.v1.analysis.create_analysis')
 @patch('backend.api.v1.analysis.get_user_by_spotify_id')
 @patch('backend.api.v1.analysis.Spotify') # Ersetzt spotify klasse
 @patch('backend.api.v1.analysis.analyze_personality_with_llm') # Ersetzt LLM Funktion
-async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mock_get_user, mock_create_analysis):
+async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mock_get_user, mock_create_analysis, mock_retrieve, mock_format):
     """Test erfolgreicher API Call mit gemockten Spotify Daten"""
     # simuliert spotify api response
     mock_artists = {
@@ -50,7 +52,11 @@ async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mo
     mock_spotify_class.return_value = mock_spotify_instance
     mock_get_user.return_value = MagicMock(id=1)
     mock_create_analysis.return_value = MagicMock(id=1, user_id=1, result={}, created_at="2024-01-01")
-    
+
+    # Retrieval mitmocken: sonst laueft der Endpoint echtes pgvector-SQL gegen SQLite (CI) und crasht.
+    mock_retrieve.return_value = []
+    mock_format.return_value = ""
+
     mock_llm.return_value = {
         "openness": 0.8,
         "conscientiousness": 0.6,
