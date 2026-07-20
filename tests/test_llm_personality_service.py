@@ -24,6 +24,14 @@ def test_analyze_personality_with_llm(mock_client):
         "listening_frequency": 15.0,
         "repeat_ratio": 0.3
     }
+    mock_grounding_context = (
+    "[Schaefer & Mehlhorn, Schaefer_Mehlhorn_2017] Openness to Experience is the most "
+    "reliable predictor of musical taste, correlating with a preference for sophisticated "
+    "music such as classical and jazz (r ≈ .15–.21). Conscientiousness, Agreeableness and "
+    "Neuroticism show near-zero, non-replicating correlations with music.\n\n"
+    "[Rentfrow & Gosling, Rentfrow_Gosling_2003] Openness loads strongly on the Reflective "
+    "and Complex dimension; Extraversion relates to Energetic and Rhythmic (contemporary) music."
+    )
     
     # Mock Claude API Response
     mock_message = MagicMock() # leeres Fake Objekt
@@ -44,7 +52,8 @@ def test_analyze_personality_with_llm(mock_client):
         top_artists=mock_top_artists,
         diversity_scores=mock_diversity_scores,
         content_features=mock_content_features,
-        temporal_features=mock_temporal_features
+        temporal_features=mock_temporal_features,
+        grounding_context=mock_grounding_context
     )
     
     assert result["openness"] == 0.8
@@ -76,6 +85,14 @@ def test_analyze_personality_with_llm_invalid_json(mock_client):
         "listening_frequency": 15.0,
         "repeat_ratio": 0.3
     }
+    mock_grounding_context = (
+    "[Schaefer & Mehlhorn, Schaefer_Mehlhorn_2017] Openness to Experience is the most "
+    "reliable predictor of musical taste, correlating with a preference for sophisticated "
+    "music such as classical and jazz (r ≈ .15–.21). Conscientiousness, Agreeableness and "
+    "Neuroticism show near-zero, non-replicating correlations with music.\n\n"
+    "[Rentfrow & Gosling, Rentfrow_Gosling_2003] Openness loads strongly on the Reflective "
+    "and Complex dimension; Extraversion relates to Energetic and Rhythmic (contemporary) music."
+    )
     
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text='No valid json')]
@@ -92,7 +109,8 @@ def test_analyze_personality_with_llm_invalid_json(mock_client):
             top_artists=mock_top_artists,
             diversity_scores=mock_diversity_scores,
             content_features=mock_content_features,
-            temporal_features=mock_temporal_features
+            temporal_features=mock_temporal_features,
+            grounding_context=mock_grounding_context,
         )
     
     
