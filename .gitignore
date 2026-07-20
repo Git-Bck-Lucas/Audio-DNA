@@ -11,3 +11,4 @@ logs/
 .DS_Store
 generate_docs.py
 *.pdf
+CLAUDE.md
