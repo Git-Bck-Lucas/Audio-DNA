@@ -1,9 +1,9 @@
 from anthropic import Anthropic
 from backend.config import settings
 import json
-import re
 
 from backend.logging_config import logger
+from backend.api.v1.schemas import PersonalityScores
 
 client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
@@ -13,7 +13,8 @@ def analyze_personality_with_llm(
     top_artists:list,
     diversity_scores: dict,
     content_features: dict,
-    temporal_features: dict
+    temporal_features: dict,
+    grounding_context: str,
 ) -> dict:
     logger.info("Starting LLM Analysis")
     music_profile = {
@@ -39,10 +40,10 @@ def analyze_personality_with_llm(
     prompt = f"""
     You are a music psychology expert. Analyze this person's music listening data and provide Big Five personality scores.
     
-    Scientific Basis:
-    - Rentfrow & Gosling (2003): Genre preferences correlate with personality traits
-    - Zweigenhaft (2008): Music preferences predict Openness to Experience
-    - North (2010): Social aspects of music relate to Extraversion
+    Relevant scientific literature (retrieved for this user's genres):
+    <retrieved_literature>
+    {grounding_context}
+    </retrieved_literature>   
     
     Music Profile:
     {json.dumps(music_profile, indent=2)}
@@ -58,36 +59,34 @@ def analyze_personality_with_llm(
     2. DIVERSITY METRICS:
     - High genre clusters (>10) → High Openness
     - High entropy (>0.8) → High Openness
-    - Low diversity → Higher Conscientiousness
     
     3. CONTENT FEATURES:
-    - Explicit content → Lower Agreeableness
-    - Older music (>10 years) → Higher Conscientiousness, Openness
+    - Older music (>10 years) → Higher Openness
     - Long songs (>5min) → Higher Openness
     
     4. LISTENING BEHAVIOR:
-    - High repeat ratio (>0.4) → Higher Conscientiousness
-    - Very high frequency (>20/day) → Potential Neuroticism
+    - Listening behavior (repeat ratio, frequency) is not a reliable predictor of Big Five traits from music data. Use only as weak supporting context.
     
     5. MAINSTREAM SCORE (lowest weight):
     - Only use as tie-breaker or supporting evidence
 
-    Important: Base your assessment primarily on the artist names and genres, not the mainstream score.
+    Important: Base your assessment primarily on the artist names and genres, not the mainstream score.    
+    Calibration (highest priority):
+    - Use the literature in <retrieved_literature> as your main source.
+    - If there is a conflict between the guidelines and the literature, always prefer the literature.
+    - Music data reliably predicts only Openness. For Conscientiousness, Agreeableness and Neuroticism the
+      relationship is near zero, so keep those scores close to the neutral midpoint (~0.5) and express low
+      confidence rather than guessing.
 
-    Return ONLY valid JSON with scores between 0.0-1.0:
-    {{
-    "openness": 0.0-1.0,
-    "conscientiousness": 0.0-1.0,
-    "extraversion": 0.0-1.0,
-    "agreeableness": 0.0-1.0,
-    "neuroticism": 0.0-1.0
-    }}
+    Provide a score between 0.0 and 1.0 for each of the five traits, plus a short reasoning
+    that cites the retrieved literature.
     """
     try:
-        message = client.messages.create(
-            model="claude-opus-4-5-20251101",
+        message = client.messages.parse(
+            model="claude-opus-4-8",
             max_tokens=1024,
-            messages = [{"role": "user", "content": prompt}]
+            messages = [{"role": "user", "content": prompt}],
+            output_format=PersonalityScores,
         )
         input_tokens = message.usage.input_tokens
         output_tokens = message.usage.output_tokens
@@ -97,24 +96,13 @@ def analyze_personality_with_llm(
         total_costs = input_costs + output_costs
         logger.info(f"Cost: {total_costs}")
         
-        response_text = message.content[0].text
-        json_match = re.search(r'```json\s*(\{.*?\})\s*```', response_text, re.DOTALL)
-        if json_match:
-            json_str = json_match.group(1)
-            personality_scores = json.loads(json_str)
-            reasoning = response_text.split('```')[-1].strip()
-            if reasoning.startswith('**Reasoning:**'):
-                reasoning = reasoning.replace('**Reasoning:**', '').strip()
-        else:
-            logger.warning('No Json block found in Claude Response')
-            personality_scores = json.loads(response_text)
-            reasoning = None
+        scores = message.parsed_output
+        
         
         return {
-            **personality_scores,
-            "reasoning": reasoning,
+            **scores.model_dump(),
             "api_usage": {
-                "model": "claude-opus-4-5-20251101",
+                "model": "claude-opus-4-8",
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
                 "total_tokens": input_tokens + output_tokens,

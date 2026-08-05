@@ -14,3 +14,11 @@ class AnalysisResponse(BaseModel):
     created_at: datetime
     
     model_config = {"from_attributes": True}
+    
+class PersonalityScores(BaseModel):
+    openness: float
+    conscientiousness: float
+    extraversion: float
+    agreeableness: float
+    neuroticism: float
+    reasoning: str

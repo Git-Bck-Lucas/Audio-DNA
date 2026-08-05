@@ -1,0 +1,48 @@
+# backend/rag/ingest.py
+
+from pathlib import Path
+from backend.rag.load_documents import load_documents
+from backend.rag.chunking import chunk_text
+from backend.rag.embed import embed_texts
+from backend.rag.chunk_tagging import tag_chunk
+from backend.db.database import SessionLocal
+from backend.db.models import Chunks
+from backend.db.repository import replace_chunks
+
+def parse_source_author(stem: str) -> tuple[str, str]:
+    source = stem
+    author = stem.rsplit("_", 1)[0]
+    author = author.replace("_", " & ")
+    return (source, author)
+
+def ingest_documents(documents_dir: str):
+    doc_path = Path(documents_dir)
+    all_chunks: list[Chunks] = []
+
+    for file in doc_path.iterdir():
+        if file.suffix not in ['.pdf', '.md']:
+            continue
+        print(f"Processing {file.name}...")
+        source, author = parse_source_author(file.stem)   # file.stem = Name ohne Endung
+        text = load_documents(str(file))
+        chunks = chunk_text(text)
+        embeddings = embed_texts(chunks)
+        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):                 # i -> chunk_index
+            dimensions, traits = tag_chunk(chunk)          # lexikalisches Metadaten-Tagging
+            all_chunks.append(Chunks(
+                source=source,
+                author=author,
+                chunk_index=i,
+                text=chunk,
+                embedding=embedding,                       # pgvector nimmt die Liste direkt
+                dimensions=dimensions,
+                traits=traits,
+            ))
+        print(f"File: {file.name} -> {len(chunks)} chunks")
+
+    with SessionLocal() as db:                             # Script: Session als Context-Manager
+        replace_chunks(db, all_chunks)
+    print(f"Stored {len(all_chunks)} chunks.")
+        
+if __name__ == "__main__":
+    ingest_documents("backend/rag/documents")

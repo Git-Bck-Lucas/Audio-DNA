@@ -9,3 +9,6 @@ __pycache__/
 test_scripts/
 logs/
 .DS_Store
+generate_docs.py
+*.pdf
+CLAUDE.md
