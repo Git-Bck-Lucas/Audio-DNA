@@ -3,7 +3,7 @@
 from pathlib import Path
 from backend.rag.load_documents import load_documents
 from backend.rag.chunking import chunk_text
-from backend.rag.embed import embed_text
+from backend.rag.embed import embed_texts
 from backend.rag.chunk_tagging import tag_chunk
 from backend.db.database import SessionLocal
 from backend.db.models import Chunks
@@ -26,8 +26,8 @@ def ingest_documents(documents_dir: str):
         source, author = parse_source_author(file.stem)   # file.stem = Name ohne Endung
         text = load_documents(str(file))
         chunks = chunk_text(text)
-        for i, chunk in enumerate(chunks):                 # i -> chunk_index
-            embedding = embed_text(chunk)
+        embeddings = embed_texts(chunks)
+        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):                 # i -> chunk_index
             dimensions, traits = tag_chunk(chunk)          # lexikalisches Metadaten-Tagging
             all_chunks.append(Chunks(
                 source=source,

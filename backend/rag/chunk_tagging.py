@@ -32,7 +32,8 @@ DIMENSION_VOCAB: dict[str, list[str]] = {
         "rap", "hip-hop", "hip hop", "electronica", "dance music", "soul", "funk",
     ],
     "Mellow": [
-        "mellow", "romantic", "relaxing", "soft rock", "r&b", "smooth jazz",
+        "mellow", "romantic", "relaxing", "soft rock", "r&b", "smooth jazz", "soothing",
+        "adult contemporary", "easy listening", "ballad", "slow tempo", "downtempo",
     ],
     "Unpretentious": [
         "unpretentious", "upbeat and conventional", "sincere", "uncomplicated",

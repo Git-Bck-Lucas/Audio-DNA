@@ -17,7 +17,7 @@ Dieses Modul stellt drei Strategien nebeneinander, damit du den Effekt isolieren
 Vergleichs-Skript: backend/rag/compare_query_strategies.py
 """
 
-from backend.rag.embed import embed_text
+from backend.rag.embed import embed_text, embed_texts
 from backend.rag.genre_mapping import DIMENSION_STEM_EMBEDDINGS, MUSIC_DIMENSIONS
 
 
@@ -84,7 +84,11 @@ DIMENSION_TRAIT_QUERIES: dict[str, str] = {
     ),
 }
 
+_dims = list(DIMENSION_TRAIT_QUERIES) # gibt die 5 dimensionsnamen als liste
+_query_vectors = embed_texts([DIMENSION_TRAIT_QUERIES[d] for d in _dims])
+DIMENSION_TRAIT_QUERY_VECTORS: dict[str, list[float]] = dict(zip(_dims, _query_vectors)) # fügt namen und vektoren paarweise zu einem dict zusammen
+
 
 def trait_query(dim: str) -> list[float]:
     """Strategie C: englischer Fließtext-Query im Stil der Zielpassagen (siehe oben)."""
-    return embed_text(DIMENSION_TRAIT_QUERIES[dim])
+    return DIMENSION_TRAIT_QUERY_VECTORS[dim]
