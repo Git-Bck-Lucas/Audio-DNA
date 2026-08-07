@@ -208,6 +208,44 @@ Strategie schärfere Treffer liefert.
 
 ---
 
+## 4b. Trait-orientiertes Retrieval + Evaluation (aktueller Produktionsstand)
+
+Der dimensions-orientierte Pfad (Abschnitte 3.7–3.9) war der erste Ansatz. Das eigentliche Ziel
+ist aber: pro **Big-Five-Trait** einen Beleg ins LLM-Prompt geben, denn der Output hat 5 Traits,
+nicht 5 Musik-Dimensionen. Für Openness/Extraversion deckt sich Dimension ↔ Trait zufällig; für
+Conscientiousness/Agreeableness/Neuroticism gibt es **keine** saubere Dimension.
+
+### `trait_queries.py` (neu)
+Eine handgeschriebene, englische Fließtext-Query **pro Trait** (`big_five_query(trait)`), im Stil
+der Zielpassagen (symmetrischer Encoder). Für C/A/N bewusst mit Verhaltens-Vokabular (repetition,
+listening frequency, diversity), damit die Anderson-Verhaltens-Chunks ziehen. Die Queries sind
+gegen das Eval getunt.
+
+### Produktionsentscheidung: nur Trait-Pfad, ungefiltert
+- **Dimensions-Pfad raus.** Empirisch (science-mode, gleiches Profil): identische Scores und gleich
+  gute Reasonings, aber ~2x Kontext-Tokens (~21% teurer). Der Pfad zog überwiegend Hintergrund-Chunks.
+- **Filter aus.** Der Trait-Tag-Filter schließt valide, aber **ungetaggte** Chunks aus (z.B. der
+  Neuroticism-Beleg bei Schaefer, dessen Überschrift beim Chunking abgetrennt wurde). Ungefiltert
+  ist messbar besser. Der Filter kommt zurück, sobald das Chunking feiner ist.
+- **Bonus:** Der Trait-Pfad ist **nutzer-unabhängig** (gleiche 5 Queries für alle) → das Grounding
+  ist cachebar/vorberechenbar (nächster Kosten-Hebel).
+
+### `eval_retrieval.py` — recall@k
+Formales Retrieval-Eval, trait-gekeyed, **any-of**: pro Trait mehrere gegen den Korpus verifizierte
+Belegstellen (jeweils in 1–2 Chunks), ein Treffer genügt. „Single-gold"-recall unterschätzt, weil
+pro Trait mehrere valide Chunks existieren.
+
+**Baseline (6 Paper / 514 Chunks), ungefiltert:** `recall@1 = 0.80`, `recall@5 = 1.00`.
+Gefiltert schlechter (`recall@5 = 0.80`) — siehe Tagging-Lücke oben.
+
+### Zentrale Erkenntnis für die Kalibrierung
+**Evidenz *über* einen Trait ≠ Evidenz *für* eine Richtung.** Für C/A/N sagt die retrievte Literatur
+überwiegend „near-zero / kein konsistenter Zusammenhang". Deshalb hält der Science-Mode diese Traits
+ehrlich nahe 0.5 mit `confidence: low` — nicht weil das Retrieval versagt, sondern weil die Studien
+schlicht keine verlässliche Richtung hergeben.
+
+---
+
 ## 5. Wie man alles ausführt
 
 Die DB läuft im Docker-Netz unter dem Hostnamen `db`. **Vom Host (Mac) aus** ist der nicht
@@ -255,14 +293,23 @@ tests + Threshold-Sweep), `python -m backend.rag.chunk_tagging` (Tagging an Beis
 | `db/models.py` | geändert | `Chunks.dimensions`, `Chunks.traits` (ARRAY-Spalten) |
 | `db/repository.py` | geändert | `search_similar_chunks`: Similarity-Score + optionale Dimension/Trait-Filter |
 | `migrations/versions/c2d4e6f80a1b_*.py` | **neu** | Migration für die zwei neuen Spalten |
+| `documents/` | ergänzt | +2 Paper: Rentfrow/Goldberg/Levitin (2011), Anderson (2021) → 514 Chunks |
+| `trait_queries.py` | **neu** | Eine Query pro Big-Five-Trait (`big_five_query`), gegen das Eval getunt |
+| `eval_retrieval.py` | überarbeitet | Trait-gekeyedes any-of recall@k; Baseline recall@5 = 1.00 (ungefiltert) |
+| `../services/retrieval_service.py` | geändert | Trait-orientiertes Grounding; Dimensions-Pfad entfernt (Kosten/Redundanz) |
 
 ---
 
 ## 7. Offene nächste Schritte
 
-- **RAG in den LLM-Prompt einbinden** (`llm_personality_service.py`): die gefundenen Belegstellen
-  als Kontext ins Big-Five-Scoring geben — inkl. der zentralen Warnung aus der Literatur, dass
-  Conscientiousness/Agreeableness/Neuroticism aus Musik **kaum** verlässlich vorhersagbar sind
-  (r ≈ 0.058 im Schnitt). Das ist der eigentliche Mehrwert-Payoff der Pipeline.
-- **Feineres Chunking** der Zusammenfassung (eine Korrelation pro Chunk) für perfekte Trennschärfe.
+- [x] **RAG in den LLM-Prompt eingebunden** (`llm_personality_service.py`): Belegstellen als Kontext
+  ins Big-Five-Scoring, inkl. der Kalibrierung (C/A/N near-zero → nahe 0.5, `confidence: low`).
+  Zwei Modi (`science` / `lucas`) über austauschbare Prompt-Strategien. Das war der Mehrwert-Payoff.
+- **Prompt-Caching des Groundings**: da der Trait-Pfad nutzer-unabhängig ist, lässt sich der
+  Kontext einmal vorberechnen/cachen → Grounding pro Analyse ~gratis.
+- **Feineres Chunking** der Zusammenfassung (eine Korrelation pro Chunk). Löst auch die Tagging-
+  Lücke, wodurch der Trait-Filter wieder helfen könnte (aktuell aus).
 - **Robusteres Sentence-Splitting** in `chunking.py` (Abkürzungen, Statistik-Notation).
+- **Optionaler nutzer-spezifischer Retrieval-Pfad** (1–2 genre-spezifische Chunks), falls
+  Science-Mode gezieltere Nudges bekommen soll. Das genre→MUSIC-Mapping (`genre_mapping.py`) eignet
+  sich außerdem als **Frontend-Feature** („deine Musik-DNA in 5 Dimensionen").
