@@ -1,6 +1,6 @@
 from unittest.mock import patch, MagicMock
 from backend.services.llm_personality_service import analyze_personality_with_llm
-from backend.api.v1.schemas import PersonalityScores
+from backend.api.v1.schemas import PersonalityScores, TraitScore
 
 
 @patch('backend.services.llm_personality_service.client')  # Ersetzt Anthropic Client
@@ -36,12 +36,11 @@ def test_analyze_personality_with_llm(mock_client):
     # validierte PersonalityScores-Instanz.
     mock_message = MagicMock()
     mock_message.parsed_output = PersonalityScores(
-        openness=0.8,
-        conscientiousness=0.6,
-        extraversion=0.7,
-        agreeableness=0.5,
-        neuroticism=0.4,
-        reasoning="Test reasoning",
+        openness=TraitScore(score=0.8, confidence="high", reasoning="Test reasoning"),
+        conscientiousness=TraitScore(score=0.6, confidence="low", reasoning="Test reasoning"),
+        extraversion=TraitScore(score=0.7, confidence="medium", reasoning="Test reasoning"),
+        agreeableness=TraitScore(score=0.5, confidence="low", reasoning="Test reasoning"),
+        neuroticism=TraitScore(score=0.4, confidence="low", reasoning="Test reasoning"),
     )
     mock_message.usage.input_tokens = 500
     mock_message.usage.output_tokens = 100
@@ -58,8 +57,10 @@ def test_analyze_personality_with_llm(mock_client):
         grounding_context=mock_grounding_context,
     )
 
-    assert result["openness"] == 0.8
-    assert result["conscientiousness"] == 0.6
+    assert result["openness"]["score"] == 0.8
+    assert result["openness"]["confidence"] == "high"
+    assert result["conscientiousness"]["score"] == 0.6
+    assert result["mode"] == "science"  # Default-Modus, wenn nicht übergeben
     assert result["api_usage"]["input_tokens"] == 500
     assert result["api_usage"]["output_tokens"] == 100
     assert result["api_usage"]["estimated_cost_usd"] == round(500 * 0.000005 + 100 * 0.000025, 6)
