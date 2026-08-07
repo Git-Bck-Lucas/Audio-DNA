@@ -4,7 +4,7 @@ from backend.services.llm_personality_service import analyze_personality_with_ll
 from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score, calculate_content_features, calculate_temporal_features
 from backend.services.retrieval_service import retrieve_grounding_context, format_grounding_context
 from backend.services.spotify_data_helpers import extract_top_artists_names
-from backend.api.v1.schemas import AnalysisResponse
+from backend.api.v1.schemas import AnalysisResponse, Mode
 
 from sqlalchemy.orm import Session
 
@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 @router.get('/get_personality', response_model=AnalysisResponse)
-async def get_personality(access_token: str, spotify_user_id:str, db: Session = Depends(get_db)) -> AnalysisResponse: 
+async def get_personality(access_token: str, spotify_user_id:str, mode: Mode = "science", db: Session = Depends(get_db)) -> AnalysisResponse:
     logger.info("Starting Personality Analysis Request ")
     try:
         spotify_object = Spotify(
@@ -54,6 +54,7 @@ async def get_personality(access_token: str, spotify_user_id:str, db: Session = 
             content_features=content_features,
             temporal_features=temporal_features,
             grounding_context=grounding_context,
+            mode=mode,
         )
         logger.info("Personality analysis completed successfully")
         personality_analyis_dict =  {
