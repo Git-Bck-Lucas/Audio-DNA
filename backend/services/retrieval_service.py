@@ -1,6 +1,4 @@
 from sqlalchemy.orm import Session
-from backend.rag.genre_mapping import map_genres_to_dimensions
-from backend.rag.dimension_queries import trait_query
 from backend.db.repository import search_similar_chunks
 from backend.db.models import Chunks
 from backend.rag.trait_queries import big_five_query, BIG_FIVE_TRAIT_QUERIES
@@ -55,19 +53,13 @@ def retrieve_grounding_context(
     top_k: int = 3,
     trait_top_k: int = 2,
 ) -> list[tuple[Chunks, float]]:
-    mapping = map_genres_to_dimensions(genres)
-    relevant_dimensions = {dim for dim in mapping.values() if dim is not None}
+    """Trait-orientiertes Grounding: pro Big-Five-Trait die passenden Belege.
 
-    dimension_hits: list[tuple[Chunks, float]] = []
-    for dim in relevant_dimensions:
-        query_vec = trait_query(dim)
-        dimension_hits.extend(
-            search_similar_chunks(db, query_vec, top_k=top_k, dimension=dim)
-        )
-
-    # --- Pfad 2: direkt pro Big-Five-Trait (neu) ---
-    trait_hits = retrieve_by_traits(db, top_k=trait_top_k)
-
-    # --- zusammenführen, Duplikate raus ---
-    return _dedupe_best(dimension_hits + trait_hits)
+    Der frühere genre->dimensions-Pfad wurde entfernt. Empirisch (science-mode) lieferte er
+    identische Scores und gleich gute Reasonings, kostete aber ~2x Kontext-Tokens (er zog
+    überwiegend Hintergrund-Chunks). Der Trait-Pfad ist zudem nutzer-unabhängig und damit
+    später cachebar. `genres`/`top_k` bleiben in der Signatur für einen optionalen künftigen
+    nutzer-spezifischen Pfad erhalten, werden aktuell aber nicht genutzt.
+    """
+    return _dedupe_best(retrieve_by_traits(db, top_k=trait_top_k))
     

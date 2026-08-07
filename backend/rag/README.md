@@ -17,9 +17,11 @@ Job dieser RAG-Pipeline:
 > einer Wissensbasis und gibt sie dem LLM als Kontext mit, bevor er antwortet (generation).
 > Statt „was weiß das Modell zufällig" → „was steht in *diesen* Papern".
 
-Die Wissensbasis sind 4 Paper zu Musikgeschmack & Persönlichkeit (`documents/`). Sie werden in
-kleine Stücke („Chunks") zerlegt, in Vektoren übersetzt („Embeddings") und in Postgres gespeichert.
-Bei einer Anfrage übersetzen wir auch die Frage in einen Vektor und suchen die ähnlichsten Chunks.
+Die Wissensbasis sind **6 Paper** zu Musikgeschmack & Persönlichkeit (`documents/`): Rentfrow &
+Gosling (2003), Rentfrow/Goldberg/Levitin (2011), Langmeyer (2012), Schäfer & Mehlhorn (2017),
+Anderson (2021, Spotify-Streaming-Daten) und Sust (2023). Sie werden in kleine Stücke („Chunks")
+zerlegt, in Vektoren übersetzt („Embeddings") und in Postgres gespeichert. Bei einer Anfrage
+übersetzen wir auch die Frage in einen Vektor und suchen die ähnlichsten Chunks.
 
 **Zwei getrennte Aufgaben in diesem Ordner, nicht verwechseln:**
 
@@ -31,6 +33,12 @@ Bei einer Anfrage übersetzen wir auch die Frage in einen Vektor und suchen die 
 
 Das **MUSIC-Modell** (Rentfrow, Goldberg & Levitin 2011) sind 5 Musik-Präferenz-Dimensionen:
 **M**ellow, **U**npretentious, **S**ophisticated, **I**ntense, **C**ontemporary.
+
+> **Wichtige Weiterentwicklung (siehe Abschnitt „Trait-orientiertes Retrieval"):** Inzwischen gibt
+> es zwei Retrieval-Ansätze. Der dimensions-orientierte Pfad (oben) war der erste. Der Produktions-
+> pfad ist jetzt **trait-orientiert** (eine Query pro Big-Five-Trait), weil der Output an den 5
+> Traits hängt, nicht an den 5 Musik-Dimensionen — und für C/A/N gibt es keine passende Dimension.
+> Der Dimensions-Pfad ist aus dem Grounding entfernt (gemessen: identische Scores, ~2x Kontext).
 
 ---
 
@@ -110,9 +118,9 @@ das Tag `Intense`, wenn er charakteristisches Vokabular enthält (`"intense"`, `
 Ein Chunk kann **mehrere** Tags tragen (die Meta-Analyse-Zusammenfassung nennt alle 5 Dimensionen)
 oder **keins** (reine Methodik-Absätze). `tag_chunk(text)` gibt `(dimensions, traits)` zurück.
 
-**Ergebnis an echten Daten:** 75% der 328 Chunks bekommen *kein* Dimension-Tag — das sind genau
-die generischen Methodik-/Boilerplate-Absätze, die wir aus der dimensionsspezifischen Suche
-draußen haben wollen.
+**Ergebnis an echten Daten:** 75% der Chunks bekommen *kein* Dimension-Tag — das sind genau die
+generischen Methodik-/Boilerplate-Absätze, die wir aus der dimensionsspezifischen Suche draußen
+haben wollen. (Gemessen bei 328 Chunks; nach zwei weiteren Papern hat der Korpus jetzt **514 Chunks**.)
 
 ### 3.5 `ingest.py` — alles zusammenführen
 Orchestriert: für jedes Dokument → laden → chunken → für jeden Chunk embedden **und taggen** →
