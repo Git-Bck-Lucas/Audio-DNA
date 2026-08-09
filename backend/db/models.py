@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from pgvector.sqlalchemy import Vector
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.db.database import Base
 
 class User(Base):
@@ -10,15 +10,15 @@ class User(Base):
     spotify_user_id = Column(String, unique=True, nullable=False)
     access_token = Column(String)
     refresh_token = Column(String, unique=True)
-    token_expires_at = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    token_expires_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     
 class Analysis(Base):
     __tablename__ = "analysis"
     id =  Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     result = Column(JSONB, nullable=False)
-    created_at =Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     
 class Chunks(Base):
     __tablename__ = "chunks"
