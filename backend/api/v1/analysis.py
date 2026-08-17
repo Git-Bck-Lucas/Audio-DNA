@@ -6,11 +6,12 @@ from backend.services.retrieval_service import retrieve_grounding_context, forma
 from backend.services.spotify_data_helpers import extract_top_artists_names
 from backend.services.spotify_auth_service import get_valid_access_token
 from backend.api.v1.schemas import AnalysisResponse, Mode
-
+from backend.api.dependencies import get_current_user
+from backend.db.models import User
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.db.repository import get_user_by_spotify_id, create_analysis
+from backend.db.repository import create_analysis
 
 import logging
 
@@ -22,12 +23,9 @@ router = APIRouter(
 )
 
 @router.get('/get_personality', response_model=AnalysisResponse)
-async def get_personality(spotify_user_id:str, mode: Mode = "science", db: Session = Depends(get_db)) -> AnalysisResponse: 
+async def get_personality(user: User = Depends(get_current_user), mode: Mode = "science", db: Session = Depends(get_db)) -> AnalysisResponse: 
     logger.info("Starting Personality Analysis Request ")
     try:
-        user = get_user_by_spotify_id(db, spotify_user_id)
-        if user is None:
-            raise HTTPException(status_code=404, detail="User not found")
         access_token = get_valid_access_token(db, user)
         spotify_object = Spotify(
                     auth=access_token

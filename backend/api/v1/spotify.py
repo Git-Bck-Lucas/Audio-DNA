@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from spotipy import Spotify
 from datetime import datetime, timezone
 
@@ -35,7 +35,7 @@ async def login():
 
 
 @router.get("/callback", response_model=UserResponse) # Nach Zustimmung
-async def callback(code: str, db: Session = Depends(get_db)): # Sage FastAPI: Führe get_db aus und gib mir das Ergebnis als db -> rugt get_db() auf 
+async def callback(code: str, request: Request, db: Session = Depends(get_db)): # Sage FastAPI: Führe get_db aus und gib mir das Ergebnis als db -> rugt get_db() auf 
     #-> öffnet sessoin und gibt sie per yield zurück, fast api übergibt session als db an endpoint
     spotify_o_auth = build_spotify_oauth()
     token_dict = spotify_o_auth.get_access_token(code) # Nimmt den Code und tauscht ihn gegen Token
@@ -52,5 +52,7 @@ async def callback(code: str, db: Session = Depends(get_db)): # Sage FastAPI: F�
         user = create_user(db, spotify_user_id, access_token, refresh_token, token_expires_at)
     else:
         user = update_user_tokens(db, user, access_token, refresh_token, token_expires_at)
+        
+    request.session["user_id"] = user.id
         
     return user

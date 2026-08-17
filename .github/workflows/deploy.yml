@@ -12,6 +12,7 @@ jobs:
       POSTGRES_USER: "test"
       POSTGRES_PASSWORD: "test"
       POSTGRES_DB: "test"
+      SESSION_SECRET_KEY: "test"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

@@ -5,6 +5,9 @@ from backend.db.models import User, Analysis, Chunks
 def get_user_by_spotify_id(db: Session, spotify_user_id: str) -> User | None:
     return db.query(User).filter(User.spotify_user_id == spotify_user_id).first()
 
+def get_user_by_id(db: Session, user_id: int) -> User | None:
+    return db.query(User).filter(User.id == user_id).first()
+
 def create_user(db: Session, spotify_user_id: str, access_token: str, refresh_token: str, token_expires_at) -> User:
     user = User(spotify_user_id = spotify_user_id, access_token = access_token, refresh_token = refresh_token, token_expires_at = token_expires_at)
     db.add(user)
