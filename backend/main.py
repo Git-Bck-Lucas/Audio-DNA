@@ -1,8 +1,10 @@
 from fastapi import FastAPI 
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from backend.api.v1.spotify import router as spotify_router
 from backend.api.v1.analysis import router as analysis_router
 from backend.logging_config import logger
+from backend.config import settings
 
 app = FastAPI(
     title='Audio DNA API',
@@ -19,6 +21,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 logger.debug('CORS middleware configured')
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SESSION_SECRET_KEY,
+    https_only=False,
+    same_site='lax',
+    max_age=60*60*24*7
+)
 
 app.include_router(spotify_router, prefix="/api/v1")
 #logger.info('Spotify router registered')

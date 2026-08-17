@@ -1,6 +1,7 @@
 # API Framework
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
+itsdangerous==2.2.0  # Cookie-Signierung für SessionMiddleware
 
 # Spotify Integration
 spotipy==2.23.0
