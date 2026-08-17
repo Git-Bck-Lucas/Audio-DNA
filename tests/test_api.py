@@ -1,17 +1,32 @@
-import pytest 
+import pytest
 from httpx import AsyncClient, ASGITransport # Http Client für API Tests
 from unittest.mock import patch, MagicMock  # Ersetzt Funktionen/Objekte temporär
 from backend.main import app
+from backend.api.dependencies import get_current_user  # zum Überschreiben im Test
+
+
+@pytest.fixture
+def authenticated_user():
+    """Simuliert einen eingeloggten User, ohne echten Cookie/Session-Flow.
+
+    setup (vor yield): Auth-Dependency durch einen Fake ersetzen -> jeder
+        Depends(get_current_user) bekommt diesen MagicMock statt echter Prüfung.
+    teardown (nach yield): Override wieder entfernen, damit er nicht in andere
+        Tests leckt. Läuft auch dann, wenn der Test mit AssertionError abbricht.
+    """
+    app.dependency_overrides[get_current_user] = lambda: MagicMock(id=1)
+    yield
+    app.dependency_overrides.clear()
+
 
 @pytest.mark.asyncio # sagt pytest: Das ist ein async test
 @patch('backend.api.v1.analysis.get_valid_access_token') # Ersetzt Token-Holen/Refresh
 @patch('backend.api.v1.analysis.format_grounding_context')
 @patch('backend.api.v1.analysis.retrieve_grounding_context')
 @patch('backend.api.v1.analysis.create_analysis')
-@patch('backend.api.v1.analysis.get_user_by_spotify_id')
 @patch('backend.api.v1.analysis.Spotify') # Ersetzt spotify klasse
 @patch('backend.api.v1.analysis.analyze_personality_with_llm') # Ersetzt LLM Funktion
-async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mock_get_user, mock_create_analysis, mock_retrieve, mock_format, mock_get_valid_token):
+async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mock_create_analysis, mock_retrieve, mock_format, mock_get_valid_token, authenticated_user):
     """Test erfolgreicher API Call mit gemockten Spotify Daten"""
     # simuliert spotify api response
     mock_artists = {
@@ -24,7 +39,7 @@ async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mo
             }
         ]
     }
-    
+
     mock_tracks = {
         "items": [
             {
@@ -36,7 +51,7 @@ async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mo
             }
         ]
     }
-    
+
     mock_recently_played = {
         "items": [
             {
@@ -45,13 +60,12 @@ async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mo
             }
         ]
     }
-    
+
     mock_spotify_instance = MagicMock() # Fake spotify object, hat automatisch alle Methoden/Attribute die du brauchst
     mock_spotify_instance.current_user_top_artists.return_value = mock_artists
     mock_spotify_instance.current_user_top_tracks.return_value = mock_tracks
     mock_spotify_instance.current_user_recently_played.return_value = mock_recently_played
     mock_spotify_class.return_value = mock_spotify_instance
-    mock_get_user.return_value = MagicMock(id=1)
     mock_get_valid_token.return_value = "test_token" # gueltiger Token, Refresh-Logik wird separat getestet
     mock_create_analysis.return_value = MagicMock(id=1, user_id=1, result={}, created_at="2024-01-01")
 
@@ -67,22 +81,16 @@ async def test_get_personality_endpoint_success(mock_llm, mock_spotify_class, mo
         "neuroticism": 0.4,
         "reasoning": "Test reasoning"
     }
-    
+
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test"
     ) as client:
-        response = await client.get(
-            "/api/v1/analysis/get_personality",
-            params={"spotify_user_id": "test_user_id"}
-        )
-        
-    assert response.status_code == 200
-    data = response.json()
+        response = await client.get("/api/v1/analysis/get_personality")
+
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == 1
     assert data["user_id"] == 1
     assert data["result"] == {}
     assert "created_at" in data
-   
