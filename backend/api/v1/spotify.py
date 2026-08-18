@@ -4,10 +4,12 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from backend.api.v1.schemas import UserResponse
+from fastapi.responses import RedirectResponse
+
 from backend.db.session import get_db
 from backend.db.repository import get_user_by_spotify_id, create_user, update_user_tokens
 from backend.services.spotify_auth_service import build_spotify_oauth
+from backend.config import settings
 # Router for everything which is connected to spotify 
 # All endpoints get /spotify
 
@@ -31,10 +33,15 @@ async def login():
         "auth_url": auth_url
     }
     # Use Method get_authorize_url() to get login url 
-    # return url 
+    # return url
+    
+@router.get("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(settings.FRONTEND_URL)
 
 
-@router.get("/callback", response_model=UserResponse) # Nach Zustimmung
+@router.get("/callback")
 async def callback(code: str, request: Request, db: Session = Depends(get_db)): # Sage FastAPI: Führe get_db aus und gib mir das Ergebnis als db -> rugt get_db() auf 
     #-> öffnet sessoin und gibt sie per yield zurück, fast api übergibt session als db an endpoint
     spotify_o_auth = build_spotify_oauth()
@@ -55,4 +62,4 @@ async def callback(code: str, request: Request, db: Session = Depends(get_db)): 
         
     request.session["user_id"] = user.id
         
-    return user
+    return RedirectResponse(url=settings.FRONTEND_URL)
