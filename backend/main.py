@@ -15,7 +15,7 @@ logger.info('FastAPI App started')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[settings.FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,7 +25,7 @@ logger.debug('CORS middleware configured')
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SESSION_SECRET_KEY,
-    https_only=False,
+    https_only=settings.COOKIE_SECURE,
     same_site='lax',
     max_age=60*60*24*7
 )
