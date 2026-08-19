@@ -6,7 +6,7 @@ from backend.services.retrieval_service import retrieve_grounding_context, forma
 from backend.services.spotify_data_helpers import extract_top_artists_names
 from backend.services.spotify_auth_service import get_valid_access_token
 from backend.api.v1.schemas import AnalysisResponse, Mode
-from backend.api.dependencies import get_current_user
+from backend.api.rate_limit import rate_limit_analysis
 from backend.db.models import User
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,7 @@ router = APIRouter(
 )
 
 @router.get('/get_personality', response_model=AnalysisResponse)
-async def get_personality(user: User = Depends(get_current_user), mode: Mode = "science", db: Session = Depends(get_db)) -> AnalysisResponse: 
+async def get_personality(user: User = Depends(rate_limit_analysis), mode: Mode = "science", db: Session = Depends(get_db)) -> AnalysisResponse: 
     logger.info("Starting Personality Analysis Request ")
     try:
         access_token = get_valid_access_token(db, user)
