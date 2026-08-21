@@ -10,6 +10,9 @@ from backend.db.session import get_db
 from backend.db.repository import get_user_by_spotify_id, create_user, update_user_tokens
 from backend.services.spotify_auth_service import build_spotify_oauth
 from backend.config import settings
+from backend.api.v1.schemas import UserResponse
+from backend.db.models import User
+from backend.api.dependencies import get_current_user
 # Router for everything which is connected to spotify 
 # All endpoints get /spotify
 
@@ -63,3 +66,7 @@ async def callback(code: str, request: Request, db: Session = Depends(get_db)): 
     request.session["user_id"] = user.id
         
     return RedirectResponse(url=settings.FRONTEND_URL)
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(user: User = Depends(get_current_user)) -> User:
+    return user
