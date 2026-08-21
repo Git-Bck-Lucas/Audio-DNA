@@ -1,0 +1,59 @@
+.mode-toggle {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto;
+  line-height: 0;
+}
+
+.mode-toggle img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.mode-toggle__half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 24px;
+}
+
+.mode-toggle__half--left {
+  left: 0;
+}
+
+.mode-toggle__half--right {
+  left: 50%;
+}
+
+.mode-toggle__half span {
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.mode-toggle__half:hover span,
+.mode-toggle__half:focus-visible span {
+  background: rgba(0, 0, 0, 0.75);
+  border-color: white;
+}
+
+.mode-toggle__half:focus-visible {
+  outline: 2px solid white;
+  outline-offset: -2px;
+}

@@ -9,6 +9,7 @@ __pycache__/
 test_scripts/
 logs/
 .DS_Store
+.claude/settings.local.json
 generate_docs.py
 CLAUDE.md
 AUDIO_DNA_Dokumentation.pdf
