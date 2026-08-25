@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { fetchAnalysis, RateLimitError, type AnalysisResult, type Mode } from '../api/client'
 import { ModeToggle } from './ModeToggle'
 import { ResultView } from './ResultView'
+import { SourceList } from './SourceList'
 
 type AnalysisFlowState =
   | { phase: 'idle' }
@@ -50,7 +51,12 @@ export function Dashboard({ userId, onLogout }: Props) {
         </div>
       )}
 
-      {flow.phase === 'success' && <ResultView personality={flow.result.result.personality} />}
+      {flow.phase === 'success' && (
+        <>
+          <ResultView personality={flow.result.result.personality} />
+          <SourceList sources={flow.result.result.sources} />
+        </>
+      )}
 
       <p className="account-line">
         Eingeloggt als {userId} · <button onClick={onLogout}>Logout</button>

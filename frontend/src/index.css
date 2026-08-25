@@ -14,6 +14,13 @@ main {
   text-align: center;
 }
 
+.hero-image {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
 .account-line {
   margin-top: 24px;
   font-size: 13px;

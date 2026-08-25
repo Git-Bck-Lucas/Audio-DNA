@@ -40,12 +40,20 @@ export type PersonalityScores = {
   neuroticism: TraitScore
 }
 
+export type Source = {
+  author: string
+  source: string
+  text: string
+  score: number
+}
+
 export type AnalysisResult = {
   id: number
   user_id: number
   created_at: string
   result: {
     personality: PersonalityScores
+    sources: Source[]
     analysis_details: {
       top_artists: string[]
       genres_found: string[]

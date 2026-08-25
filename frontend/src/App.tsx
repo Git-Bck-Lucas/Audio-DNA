@@ -2,6 +2,7 @@ import { useEffect, useReducer } from 'react'
 import { authReducer, initialAuthState } from './state/authMachine'
 import { fetchLoginUrl, fetchMe, logout } from './api/client'
 import { Dashboard } from './components/Dashboard'
+import heroImage from './assets/freud-lucas.png'
 
 function App() {
   const [state, dispatch] = useReducer(authReducer, initialAuthState)
@@ -49,6 +50,7 @@ function App() {
     case 'anonymous':
       return (
         <main>
+          <img src={heroImage} alt="Sigmund Freud und Lucas nebeneinander in einem Musikstudio" className="hero-image" />
           <h1>Audio DNA</h1>
           <button onClick={handleLogin}>Login mit Spotify</button>
         </main>
