@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from spotipy import Spotify 
 from backend.services.llm_personality_service import analyze_personality_with_llm
 from backend.services.feature_extraction_service import calculate_mainstream_score, calculate_diversity_score, calculate_content_features, calculate_temporal_features
-from backend.services.retrieval_service import retrieve_grounding_context, format_grounding_context
+from backend.services.retrieval_service import retrieve_grounding_context, format_grounding_context, serialize_sources
 from backend.services.spotify_data_helpers import extract_top_artists_names
 from backend.services.spotify_auth_service import get_valid_access_token
 from backend.api.v1.schemas import AnalysisResponse, Mode
@@ -55,9 +55,12 @@ async def get_personality(user: User = Depends(rate_limit_analysis), mode: Mode 
             grounding_context=grounding_context,
             mode=mode
         )
+        sources = serialize_sources(raw_context)
+        
         logger.info("Personality analysis completed successfully")
         personality_analyis_dict =  {
             "personality": personality_scores,
+            "sources": sources,
             "analysis_details": {
                 "top_artists": extracted_artist_names,
                 "genres_found": diversity_scores["all_genres"],
