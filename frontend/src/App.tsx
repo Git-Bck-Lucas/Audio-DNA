@@ -2,6 +2,7 @@ import { useEffect, useReducer } from 'react'
 import { authReducer, initialAuthState } from './state/authMachine'
 import { fetchLoginUrl, fetchMe, logout } from './api/client'
 import { Dashboard } from './components/Dashboard'
+import { Footer } from './components/Footer'
 import heroImage from './assets/freud-lucas.png'
 
 function App() {
@@ -43,36 +44,45 @@ function App() {
     }
   }
 
-  switch (state.status) {
-    case 'checking':
-      return <p>Lade …</p>
+  function renderContent() {
+    switch (state.status) {
+      case 'checking':
+        return <p>Lade …</p>
 
-    case 'anonymous':
-      return (
-        <main>
-          <img src={heroImage} alt="Sigmund Freud und Lucas nebeneinander in einem Musikstudio" className="hero-image" />
-          <h1>Audio DNA</h1>
-          <button onClick={handleLogin}>Login mit Spotify</button>
-        </main>
-      )
+      case 'anonymous':
+        return (
+          <main>
+            <img src={heroImage} alt="Sigmund Freud und Lucas nebeneinander in einem Musikstudio" className="hero-image" />
+            <h1>Audio DNA</h1>
+            <button onClick={handleLogin}>Login mit Spotify</button>
+          </main>
+        )
 
-    case 'redirecting':
-      return <p>Weiterleitung zu Spotify …</p>
+      case 'redirecting':
+        return <p>Weiterleitung zu Spotify …</p>
 
-    case 'authenticated':
-      return <Dashboard userId={state.userId} onLogout={handleLogout} />
+      case 'authenticated':
+        return <Dashboard userId={state.userId} onLogout={handleLogout} />
 
-    case 'loggingOut':
-      return <p>Wird ausgeloggt …</p>
+      case 'loggingOut':
+        return <p>Wird ausgeloggt …</p>
 
-    case 'error':
-      return (
-        <main>
-          <p>{state.message}</p>
-          <button onClick={() => dispatch({ type: 'RETRY' })}>Erneut versuchen</button>
-        </main>
-      )
+      case 'error':
+        return (
+          <main>
+            <p>{state.message}</p>
+            <button onClick={() => dispatch({ type: 'RETRY' })}>Erneut versuchen</button>
+          </main>
+        )
+    }
   }
+
+  return (
+    <>
+      {renderContent()}
+      <Footer />
+    </>
+  )
 }
 
 export default App
