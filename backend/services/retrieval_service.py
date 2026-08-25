@@ -21,6 +21,24 @@ def format_grounding_context(results: list[tuple[Chunks, float]]) -> str:
     ]
     return "\n\n".join(entries)
 
+def serialize_sources(results: list[tuple[Chunks, float]]) -> list[dict]:
+    if not results:
+        return []
+    
+    sorted_results = sorted(results, key=lambda hit: hit[1], reverse=True)
+
+    entries = [
+        {
+            "author": chunk.author,
+            "source": chunk.source,
+            "text": chunk.text,
+            "score": score,
+        }
+        for chunk, score in sorted_results
+    ]
+
+    return entries
+
 
 def _dedupe_best(hits: list[tuple[Chunks, float]]) -> list[tuple[Chunks, float]]:
     """Pro chunk.id nur den besten Score behalten. (zieh die bestehende Logik hier rein)"""
