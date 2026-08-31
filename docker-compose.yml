@@ -22,6 +22,11 @@ services:
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  frontend-build:
+    build: ./frontend
+    volumes:
+      - frontend_dist:/srv/frontend
+    command: sh -c "cp -r /app/dist/. /srv/frontend/"
   caddy:
     image: caddy:2
     ports:
@@ -30,10 +35,15 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
+      - frontend_dist:/srv/frontend:ro
     restart: unless-stopped
     depends_on:
-      - app
+      app:
+        condition: service_started
+      frontend-build:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:
   caddy_data:
+  frontend_dist:

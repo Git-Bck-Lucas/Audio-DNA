@@ -1,0 +1,51 @@
+.result-view {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.trait {
+  margin-bottom: 24px;
+}
+
+.trait__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.trait__label {
+  font-weight: 600;
+}
+
+.trait__score {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: #666;
+}
+
+.trait__confidence {
+  font-size: 12px;
+  color: #666;
+}
+
+.trait__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e5e5e5;
+  overflow: hidden;
+}
+
+.trait__bar-fill {
+  height: 100%;
+  background: #1a1a1a;
+  border-radius: 999px;
+}
+
+.trait__reasoning {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}

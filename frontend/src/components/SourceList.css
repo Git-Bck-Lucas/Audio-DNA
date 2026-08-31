@@ -1,0 +1,37 @@
+.source-list {
+  max-width: 480px;
+  margin: 32px auto 0;
+  text-align: left;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 20px;
+}
+
+.source-list__heading {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  margin: 0 0 14px;
+}
+
+.source-list__entry {
+  margin: 0 0 16px;
+  padding-left: 14px;
+  border-left: 2px solid #ddd;
+}
+
+.source-list__entry p {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+  color: #333;
+  line-height: 1.5;
+}
+
+.source-list__entry cite {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-style: normal;
+  color: #777;
+}

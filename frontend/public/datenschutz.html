@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Datenschutzerklärung – Audio DNA</title>
+  <style>
+    body { max-width: 640px; margin: 60px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.6; color: #222; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 16px; margin-top: 32px; }
+    a { color: inherit; }
+    .todo { background: #fff3cd; padding: 8px 12px; border-radius: 4px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Datenschutzerklärung</h1>
+
+  <h2>1. Verantwortlicher</h2>
+  <p>
+    Lucas Beck, Lohmühlenstraße 27, 12435 Berlin<br />
+    E-Mail: kontakt@lucas-beck.de
+  </p>
+
+  <h2>2. Zweck der Verarbeitung</h2>
+  <p>
+    Audio DNA analysiert dein Spotify-Hörverhalten (Genres, Top-Artists, Top-Tracks, zuletzt
+    gehörte Titel) und erstellt daraus mithilfe eines KI-Sprachmodells eine
+    Persönlichkeitseinschätzung nach dem Big-Five-Modell. Das Projekt ist ein
+    Portfolio-/Lernprojekt, kein kommerzieller Dienst.
+  </p>
+
+  <h2>3. Login über Spotify (OAuth)</h2>
+  <p>
+    Beim Login wirst du zu Spotify weitergeleitet und gibst dort die Erlaubnis, dass diese App
+    lesend auf bestimmte Daten deines Spotify-Kontos zugreifen darf: deine Spotify-Nutzer-ID,
+    Top-Artists, Top-Tracks und zuletzt gespielte Titel. Rechtsgrundlage ist deine Einwilligung
+    (Art. 6 Abs. 1 lit. a DSGVO), die du bei Spotify erteilst und jederzeit in deinen
+    Spotify-Kontoeinstellungen unter "Apps" widerrufen kannst.
+  </p>
+
+  <h2>4. Speicherung</h2>
+  <p>
+    Folgende Daten werden in unserer Datenbank gespeichert:
+  </p>
+  <ul>
+    <li>Deine Spotify-Nutzer-ID</li>
+    <li>Access- und Refresh-Token für den Spotify-Zugriff</li>
+    <li>Die Ergebnisse deiner Persönlichkeitsanalysen</li>
+  </ul>
+  <p class="todo">
+    TODO (technisch, vor Go-Live klären): Aktuell gibt es keinen Selbstbedienungsweg, um diese
+    Daten zu löschen -- Logout beendet nur die Browser-Session, löscht aber nichts aus der
+    Datenbank. Für die Löschrechte unten (Art. 17 DSGVO) muss entweder ein Lösch-Endpoint gebaut
+    werden, oder hier eine manuelle Kontaktmöglichkeit (E-Mail an Verantwortlichen) als Weg
+    angegeben werden, bis das existiert.
+  </p>
+
+  <h2>5. Weitergabe an Dritte</h2>
+  <p>
+    Zur Erstellung der Analyse werden deine Hördaten (Genres, Artist-Namen, aggregierte
+    Kennzahlen) an die Anthropic API (Claude) übermittelt, ein Dienst der Anthropic PBC mit Sitz
+    in den USA. Es findet dabei eine Datenübermittlung in ein Drittland statt.
+  </p>
+  <p class="todo">
+    TODO: Prüfen, auf welcher Grundlage diese Übermittlung erfolgt (Standardvertragsklauseln /
+    Data Processing Addendum von Anthropic -- die meisten Anbieter mit EU-Kundschaft bieten das
+    an, aber das solltest du in Anthropics aktuellen Nutzungsbedingungen/Trust-Center
+    verifizieren, nicht raten). Ggf. Anthropics eigene Datenschutzerklärung hier verlinken.
+  </p>
+  <p>
+    Für den Login wird außerdem mit Spotify (Spotify AB) kommuniziert. Es gilt zusätzlich die
+    <a href="https://www.spotify.com/de/legal/privacy-policy/" target="_blank" rel="noopener">Datenschutzerklärung von Spotify</a>.
+  </p>
+
+  <h2>6. Cookies</h2>
+  <p>
+    Diese App verwendet ein einziges Cookie: ein technisch notwendiges Session-Cookie, um dich
+    nach dem Login eingeloggt zu halten. Es dient keinem Tracking und keiner Analyse, daher ist
+    dafür keine gesonderte Einwilligung erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).
+  </p>
+
+  <h2>7. Deine Rechte</h2>
+  <p>
+    Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17),
+    Einschränkung der Verarbeitung (Art. 18) sowie Widerspruch (Art. 21) bezüglich deiner
+    gespeicherten Daten. Wende dich dafür an die oben genannte Kontakt-E-Mail.
+  </p>
+
+  <h2>8. Hosting</h2>
+  <p>
+    <!-- TODO: Hosting-Anbieter und Serverstandort eintragen, sobald Session 6 (Deploy) steht -->
+    [Hosting-Anbieter, Serverstandort]
+  </p>
+
+  <p><a href="/">Zurück zur App</a></p>
+</body>
+</html>

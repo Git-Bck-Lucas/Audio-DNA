@@ -1,0 +1,50 @@
+:root {
+  color-scheme: light dark;
+  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.hero-image {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px 0 40px;
+  font-size: 12px;
+  color: #999;
+}
+
+.footer a {
+  color: inherit;
+}
+
+.account-line {
+  margin-top: 24px;
+  font-size: 13px;
+  color: #666;
+}
+
+.account-line button {
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
