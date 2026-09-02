@@ -22,6 +22,7 @@ numpy==1.24.3
 sqlalchemy==2.0.48
 psycopg2-binary==2.9.11
 alembic==1.18.4
+cryptography==43.0.3  # Verschlüsselung der Spotify-Tokens at rest (Fernet)
 # Testing
 pytest==7.4.0
 httpx==0.27.0

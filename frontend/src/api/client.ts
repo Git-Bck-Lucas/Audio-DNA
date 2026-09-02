@@ -17,7 +17,12 @@ export async function fetchMe(): Promise<MeResponse | null> {
 }
 
 export async function fetchLoginUrl(): Promise<string> {
-  const response = await fetch(`${API_BASE_URL}/spotify/login`)
+  // credentials: 'include' ist Pflicht, sonst verwirft der Browser das Set-Cookie
+  // der Response (Cross-Origin-Request) -- der oauth_state fuer den CSRF-Check
+  // im Callback wuerde dann nie in der Session ankommen.
+  const response = await fetch(`${API_BASE_URL}/spotify/login`, {
+    credentials: 'include',
+  })
   if (!response.ok) throw new Error(`GET /spotify/login failed: ${response.status}`)
 
   const data: { auth_url: string } = await response.json()

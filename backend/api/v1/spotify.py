@@ -1,5 +1,8 @@
-from fastapi import APIRouter, Depends, Request
+import secrets
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOauthError
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -28,14 +31,19 @@ async def test():
     }
     
 @router.get("/login")
-async def login():
+async def login(request: Request):
+    # Zufälliges, nicht erratbares Einmal-Token gegen Login-CSRF: an die Session
+    # dieses Browsers gebunden, muss beim Callback exakt wiederkommen (siehe dort).
+    state = secrets.token_urlsafe(32)
+    request.session["oauth_state"] = state
+
     # Create Spofify OAuth Object with Credentials from settings
     spotify_o_auth = build_spotify_oauth()
-    auth_url = spotify_o_auth.get_authorize_url() # generiere spotify-url
+    auth_url = spotify_o_auth.get_authorize_url(state=state) # generiere spotify-url
     return {
         "auth_url": auth_url
     }
-    # Use Method get_authorize_url() to get login url 
+    # Use Method get_authorize_url() to get login url
     # return url
     
 @router.get("/logout")
@@ -45,10 +53,34 @@ async def logout(request: Request):
 
 
 @router.get("/callback")
-async def callback(code: str, request: Request, db: Session = Depends(get_db)): # Sage FastAPI: Führe get_db aus und gib mir das Ergebnis als db -> rugt get_db() auf 
+async def callback(
+    request: Request,
+    db: Session = Depends(get_db),
+    code: str | None = None,
+    state: str | None = None,
+    error: str | None = None,
+): # Sage FastAPI: Führe get_db aus und gib mir das Ergebnis als db -> rugt get_db() auf
     #-> öffnet sessoin und gibt sie per yield zurück, fast api übergibt session als db an endpoint
+
+    # Nutzer hat die Spotify-Berechtigung abgelehnt (error=access_denied, kein code) --
+    # oder jemand ruft /callback ohne die erwarteten Parameter auf. Kein Grund zum
+    # Crashen, einfach zurück zum Frontend, dort landet man wieder auf dem Login-Screen.
+    expected_state = request.session.pop("oauth_state", None)
+    if error is not None or code is None or state is None:
+        return RedirectResponse(url=settings.FRONTEND_URL)
+
+    if expected_state is None or not secrets.compare_digest(state, expected_state):
+        raise HTTPException(status_code=400, detail="Invalid OAuth state")
+
     spotify_o_auth = build_spotify_oauth()
-    token_dict = spotify_o_auth.get_access_token(code) # Nimmt den Code und tauscht ihn gegen Token
+    try:
+        token_dict = spotify_o_auth.get_access_token(code) # Nimmt den Code und tauscht ihn gegen Token
+    except SpotifyOauthError:
+        # code war ungültig/abgelaufen/schon eingelöst (z.B. Doppel-Callback durch
+        # Browser-Zurück-Button) -- auch das ist kein Serverfehler, sondern ein
+        # normaler Ablauf-Fall.
+        return RedirectResponse(url=settings.FRONTEND_URL)
+
     sp = Spotify(auth=token_dict["access_token"])
     spotify_profile = sp.current_user()
     spotify_user_id = spotify_profile["id"]
