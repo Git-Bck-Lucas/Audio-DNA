@@ -40,8 +40,13 @@ jobs:
           key:  ${{ secrets.SERVER_SSH_KEY }}
           command_timeout: 20m
           script: |
+            set -e
             cd ~/Audio-DNA
-            git pull origin main
+            # fetch + hard reset statt pull: ein Deploy-Server hat nie eigene lokale Commits,
+            # das vermeidet Merge-Konflikte und garantiert exakt den Remote-Stand. .env ist
+            # gitignored und bleibt davon unberührt.
+            git fetch origin main
+            git reset --hard origin/main
             docker compose up -d --build
             # Warten bis Postgres Verbindungen annimmt (depends_on wartet nur auf Container-Start, nicht auf DB-Readiness)
             until docker compose exec -T db pg_isready >/dev/null 2>&1; do sleep 1; done
