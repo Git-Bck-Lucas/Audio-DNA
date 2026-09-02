@@ -7,7 +7,7 @@ itsdangerous==2.2.0  # Cookie-Signierung für SessionMiddleware
 spotipy==2.23.0
 
 # Configuration
-python-dotenv==1.1.0
+python-dotenv==1.2.3
 pydantic==2.11.7
 pydantic-settings==2.1.0
 
