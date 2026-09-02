@@ -5,6 +5,11 @@ services:
       - .env
     container_name: audio-dna
     restart: unless-stopped
+    ports:
+      # Nur an localhost gebunden, nicht öffentlich -- Caddy bleibt der einzige
+      # von außen erreichbare Eintrittspunkt (TLS). Reicht lokal fürs
+      # Frontend-Dev gegen den dockerisierten Backend-Container.
+      - "127.0.0.1:8000:8000"
     depends_on:
       - db
     healthcheck:
