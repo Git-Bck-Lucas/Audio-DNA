@@ -39,6 +39,8 @@ async def get_personality(user: User = Depends(rate_limit_analysis), mode: Mode 
         diversity_scores = calculate_diversity_score(current_top_artists)
         content_features = calculate_content_features(current_top_tracks)
         temporal_features = calculate_temporal_features(recently_played_tracks)
+        if diversity_scores is None or content_features is None or temporal_features is None:
+            raise HTTPException(status_code=422, detail="insufficient_listening_data")
         mainstream_score = calculate_mainstream_score(current_top_artists)
         extracted_artist_names = extract_top_artists_names(current_top_artists)
         

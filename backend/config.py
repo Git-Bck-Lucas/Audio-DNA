@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     SESSION_SECRET_KEY: str
+    TOKEN_ENCRYPTION_KEY: str
     FRONTEND_URL: str = "http://localhost:5173"
     COOKIE_SECURE: bool = False
     
