@@ -61,6 +61,19 @@ function App() {
               Spotify-E-Mail an <a href="mailto:kontakt@lucas-beck.de">kontakt@lucas-beck.de</a>, dann trage ich
               dich ein.
             </p>
+            <h2>Demo</h2>
+            <video
+              className="demo-video"
+              src="https://github.com/Git-Bck-Lucas/Audio-DNA/releases/download/v1.0.0/audio_dna_demo.mov"
+              controls
+              preload="metadata"
+            >
+              Dein Browser kann das Video leider nicht abspielen —{' '}
+              <a href="https://github.com/Git-Bck-Lucas/Audio-DNA/releases/download/v1.0.0/audio_dna_demo.mov">
+                direkt herunterladen
+              </a>
+              .
+            </video>
           </main>
         )
 
