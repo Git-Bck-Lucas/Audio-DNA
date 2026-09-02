@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     TOKEN_ENCRYPTION_KEY: str
     FRONTEND_URL: str = "http://localhost:5173"
     COOKIE_SECURE: bool = False
+    USER_ID_HASH_SECRET: str
     
     class Config:
         env_file = ".env"
