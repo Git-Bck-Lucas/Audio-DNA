@@ -54,6 +54,7 @@ export function Dashboard({ onLogout }: Props) {
         <>
           <ResultView personality={flow.result.result.personality} />
           <SourceList sources={flow.result.result.sources} />
+          <button onClick={() => setFlow({ phase: 'idle' })}>Zurück</button>
         </>
       )}
 
