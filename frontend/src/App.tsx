@@ -62,17 +62,13 @@ function App() {
               dich ein.
             </p>
             <h2>Demo</h2>
-            <video className="demo-video" controls preload="metadata">
-              <source
-                src="https://github.com/Git-Bck-Lucas/Audio-DNA/releases/download/v1.0.0/audio_dna_demo.mp4"
-                type="video/mp4"
-              />
-              Dein Browser kann das Video leider nicht abspielen,{' '}
-              <a href="https://github.com/Git-Bck-Lucas/Audio-DNA/releases/download/v1.0.0/audio_dna_demo.mp4">
-                direkt herunterladen
-              </a>
-              .
-            </video>
+            <iframe
+              className="demo-video"
+              src="https://www.youtube-nocookie.com/embed/L6XVxHRaapA"
+              title="Audio DNA Demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </main>
         )
 

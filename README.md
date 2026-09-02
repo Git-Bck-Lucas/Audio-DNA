@@ -4,7 +4,7 @@
 
 🔗 **Live**: [audiodna.lucas-beck.de](https://audiodna.lucas-beck.de). Spotify is in Development Mode, so only manually whitelisted accounts can log in. Want to try your own? Email your name and Spotify account email to kontakt@lucas-beck.de and you'll be added. See [Known Limitations](#-known-limitations--roadmap) for why.
 
-📹 **Demo video**: [audio_dna_demo.mp4](https://github.com/Git-Bck-Lucas/Audio-DNA/releases/download/v1.0.0/audio_dna_demo.mp4) (Release [v1.0.0](https://github.com/Git-Bck-Lucas/Audio-DNA/releases/tag/v1.0.0))
+📹 **Demo video**: [youtu.be/L6XVxHRaapA](https://youtu.be/L6XVxHRaapA)
 
 ## 🎯 Problem & Solution
 

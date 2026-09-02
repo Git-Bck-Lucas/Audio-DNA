@@ -58,6 +58,8 @@ main {
 .demo-video {
   width: 100%;
   max-width: 480px;
+  aspect-ratio: 16 / 9;
   border-radius: 8px;
+  border: none;
   margin-top: 24px;
 }

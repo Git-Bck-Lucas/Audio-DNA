@@ -1,6 +1,6 @@
 # Audio DNA Case Study
 
-*[Live demo](https://audiodna.lucas-beck.de) · [Repo README](README.md) · [Demo video](https://github.com/Git-Bck-Lucas/Audio-DNA/releases/tag/v1.0.0)*
+*[Live demo](https://audiodna.lucas-beck.de) · [Repo README](README.md) · [Demo video](https://youtu.be/L6XVxHRaapA)*
 
 ## Why I built this
 
