@@ -54,3 +54,10 @@ main {
   font-size: 13px;
   color: #666;
 }
+
+.demo-video {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 8px;
+  margin-top: 24px;
+}
