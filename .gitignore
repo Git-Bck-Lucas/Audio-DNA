@@ -13,3 +13,5 @@ logs/
 generate_docs.py
 CLAUDE.md
 AUDIO_DNA_Dokumentation.pdf
+*.mov
+*.mp4

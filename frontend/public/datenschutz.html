@@ -8,7 +8,6 @@
     h1 { font-size: 22px; }
     h2 { font-size: 16px; margin-top: 32px; }
     a { color: inherit; }
-    .todo { background: #fff3cd; padding: 8px 12px; border-radius: 4px; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -42,16 +41,17 @@
     Folgende Daten werden in unserer Datenbank gespeichert:
   </p>
   <ul>
-    <li>Deine Spotify-Nutzer-ID</li>
-    <li>Access- und Refresh-Token für den Spotify-Zugriff</li>
-    <li>Die Ergebnisse deiner Persönlichkeitsanalysen</li>
+    <li>Ein Hash (HMAC-SHA256) deiner Spotify-Nutzer-ID -- nicht die ID selbst im Klartext.
+    Datenbankzugriff allein reicht damit nicht aus, um einen gespeicherten Eintrag deinem echten
+    Spotify-Account zuzuordnen bzw. herauszufinden, wem ein bestimmtes Hörprofil gehört</li>
+    <li>Access- und Refresh-Token für den Spotify-Zugriff, verschlüsselt gespeichert</li>
+    <li>Die Ergebnisse deiner Persönlichkeitsanalysen (im Klartext, da wir sie zur Anzeige
+    benötigen)</li>
   </ul>
-  <p class="todo">
-    TODO (technisch, vor Go-Live klären): Aktuell gibt es keinen Selbstbedienungsweg, um diese
-    Daten zu löschen -- Logout beendet nur die Browser-Session, löscht aber nichts aus der
-    Datenbank. Für die Löschrechte unten (Art. 17 DSGVO) muss entweder ein Lösch-Endpoint gebaut
-    werden, oder hier eine manuelle Kontaktmöglichkeit (E-Mail an Verantwortlichen) als Weg
-    angegeben werden, bis das existiert.
+  <p>
+    Es gibt aktuell keinen Selbstbedienungsweg, diese Daten zu löschen -- Logout beendet nur die
+    Browser-Session, löscht aber nichts aus der Datenbank. Für eine Löschung (siehe Abschnitt 7)
+    wende dich per E-Mail an die oben genannte Kontaktadresse, die Löschung erfolgt dann manuell.
   </p>
 
   <h2>5. Weitergabe an Dritte</h2>
@@ -60,11 +60,13 @@
     Kennzahlen) an die Anthropic API (Claude) übermittelt, ein Dienst der Anthropic PBC mit Sitz
     in den USA. Es findet dabei eine Datenübermittlung in ein Drittland statt.
   </p>
-  <p class="todo">
-    TODO: Prüfen, auf welcher Grundlage diese Übermittlung erfolgt (Standardvertragsklauseln /
-    Data Processing Addendum von Anthropic -- die meisten Anbieter mit EU-Kundschaft bieten das
-    an, aber das solltest du in Anthropics aktuellen Nutzungsbedingungen/Trust-Center
-    verifizieren, nicht raten). Ggf. Anthropics eigene Datenschutzerklärung hier verlinken.
+  <p>
+    Rechtsgrundlage für diese Übermittlung sind die von der EU-Kommission genehmigten
+    Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO). Anthropic integriert sein Data
+    Processing Addendum mit diesen Klauseln automatisch in seine Nutzungsbedingungen (Commercial
+    Terms of Service) -- mit der Nutzung der Anthropic-API gelten sie auch für dieses Projekt.
+    Details siehe
+    <a href="https://privacy.claude.com/en/articles/7996862-how-do-i-view-and-sign-your-data-processing-addendum-dpa" target="_blank" rel="noopener">Anthropics Privacy Center</a>.
   </p>
   <p>
     Für den Login wird außerdem mit Spotify (Spotify AB) kommuniziert. Es gilt zusätzlich die
@@ -87,8 +89,7 @@
 
   <h2>8. Hosting</h2>
   <p>
-    <!-- TODO: Hosting-Anbieter und Serverstandort eintragen, sobald Session 6 (Deploy) steht -->
-    [Hosting-Anbieter, Serverstandort]
+    Diese App läuft auf einem Server der Hetzner Online GmbH mit Standort Nürnberg, Deutschland.
   </p>
 
   <p><a href="/">Zurück zur App</a></p>
