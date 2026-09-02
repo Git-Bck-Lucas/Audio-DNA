@@ -56,7 +56,7 @@ function App() {
             <h1>Audio DNA</h1>
             <button onClick={handleLogin}>Login mit Spotify</button>
             <p className="access-note">
-              Die App läuft aktuell im Spotify Development Mode — nur eingetragene Test-Accounts können sich
+              Die App läuft aktuell im Spotify Development Mode, nur eingetragene Test-Accounts können sich
               einloggen. Willst du deine eigene Analyse sehen? Schick mir kurz deinen Namen und deine
               Spotify-E-Mail an <a href="mailto:kontakt@lucas-beck.de">kontakt@lucas-beck.de</a>, dann trage ich
               dich ein.
@@ -68,7 +68,7 @@ function App() {
               controls
               preload="metadata"
             >
-              Dein Browser kann das Video leider nicht abspielen —{' '}
+              Dein Browser kann das Video leider nicht abspielen,{' '}
               <a href="https://github.com/Git-Bck-Lucas/Audio-DNA/releases/download/v1.0.0/audio_dna_demo.mov">
                 direkt herunterladen
               </a>
