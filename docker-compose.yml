@@ -20,7 +20,12 @@ services:
   db:
     image: pgvector/pgvector:pg16
     ports:
-      - "5432:5432"
+      # Nur an localhost gebunden. Ohne das Präfix bindet Docker an 0.0.0.0 und
+      # Postgres ist aus dem Internet erreichbar (auf dem Server verifiziert).
+      # Die App braucht das Mapping gar nicht, sie erreicht die DB über das
+      # interne Compose-Netz unter dem Hostnamen "db". Es existiert nur, damit
+      # Alembic und die RAG-Skripte vom Host aus gegen localhost:5432 laufen.
+      - "127.0.0.1:5432:5432"
     env_file:
       - .env
     container_name: audio-dna-db
