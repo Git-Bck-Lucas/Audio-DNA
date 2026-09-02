@@ -8,7 +8,7 @@ from backend.db.encrypted_type import EncryptedString
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    spotify_user_id = Column(String, unique=True, nullable=False)
+    spotify_id_hash = Column(String, unique=True, nullable=False)
     access_token = Column(EncryptedString)
     refresh_token = Column(EncryptedString)
     token_expires_at = Column(DateTime(timezone=True))

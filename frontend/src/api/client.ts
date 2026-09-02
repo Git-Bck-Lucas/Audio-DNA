@@ -1,7 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL
 
 export type MeResponse = {
-  spotify_user_id: string
   created_at: string
 }
 

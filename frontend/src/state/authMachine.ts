@@ -2,14 +2,14 @@ export type AuthState =
   | { status: 'checking'; requestId: number }
   | { status: 'anonymous'; requestId: number }
   | { status: 'redirecting'; requestId: number }
-  | { status: 'authenticated'; requestId: number; userId: string }
-  | { status: 'loggingOut'; requestId: number; userId: string }
+  | { status: 'authenticated'; requestId: number }
+  | { status: 'loggingOut'; requestId: number }
   | { status: 'error'; requestId: number; message: string }
 
 export type AuthEvent =
   | { type: 'MOUNT' }
   | { type: 'REMOUNT' }
-  | { type: 'ME_OK'; requestId: number; userId: string }
+  | { type: 'ME_OK'; requestId: number }
   | { type: 'ME_UNAUTHENTICATED'; requestId: number }
   | { type: 'ME_NETWORK_ERROR'; requestId: number }
   | { type: 'LOGIN_CLICKED' }
@@ -32,7 +32,7 @@ export function authReducer(state: AuthState, event: AuthEvent): AuthState {
     // ueberschreiben. Validiert im Prototyp unter prototypes/auth-state-machine.prototype.html
     case 'ME_OK':
       if (state.status !== 'checking' || event.requestId !== state.requestId) return state
-      return { status: 'authenticated', requestId: state.requestId, userId: event.userId }
+      return { status: 'authenticated', requestId: state.requestId }
 
     case 'ME_UNAUTHENTICATED':
       if (state.status !== 'checking' || event.requestId !== state.requestId) return state
@@ -48,7 +48,7 @@ export function authReducer(state: AuthState, event: AuthEvent): AuthState {
 
     case 'LOGOUT_CLICKED':
       if (state.status !== 'authenticated') return state
-      return { status: 'loggingOut', requestId: state.requestId, userId: state.userId }
+      return { status: 'loggingOut', requestId: state.requestId }
 
     // /spotify/logout ist im Backend ein RedirectResponse, kein JSON-Endpoint.
     // Der Browser navigiert bei einem fetch()-Aufruf nicht automatisch mit,

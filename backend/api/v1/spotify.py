@@ -16,6 +16,7 @@ from backend.config import settings
 from backend.api.v1.schemas import UserResponse
 from backend.db.models import User
 from backend.api.dependencies import get_current_user
+from backend.services.pseudonymization import hash_spotify_id
 # Router for everything which is connected to spotify 
 # All endpoints get /spotify
 
@@ -83,15 +84,15 @@ async def callback(
 
     sp = Spotify(auth=token_dict["access_token"])
     spotify_profile = sp.current_user()
-    spotify_user_id = spotify_profile["id"]
+    spotify_id_hash = hash_spotify_id(spotify_profile["id"])
     access_token = token_dict["access_token"]
     refresh_token = token_dict["refresh_token"]
     token_expires_at = datetime.fromtimestamp(token_dict["expires_at"], tz=timezone.utc)
     
-    user = get_user_by_spotify_id(db, spotify_user_id)
+    user = get_user_by_spotify_id(db, spotify_id_hash)
     
     if user is None:
-        user = create_user(db, spotify_user_id, access_token, refresh_token, token_expires_at)
+        user = create_user(db, spotify_id_hash, access_token, refresh_token, token_expires_at)
     else:
         user = update_user_tokens(db, user, access_token, refresh_token, token_expires_at)
         
