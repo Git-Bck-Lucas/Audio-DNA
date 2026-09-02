@@ -13,7 +13,7 @@ jobs:
       POSTGRES_PASSWORD: "test"
       POSTGRES_DB: "test"
       SESSION_SECRET_KEY: "test"
-      TOKEN_ENCRYPTION_KEY: "BLNiILCYD_6c-zZDnqylwlxXVjzEz4vjIf-uRGhw9wY="
+      TOKEN_ENCRYPTION_KEY: ${{ secrets.TOKEN_ENCRYPTION_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
