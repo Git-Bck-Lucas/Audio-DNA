@@ -48,3 +48,9 @@ main {
   cursor: pointer;
   padding: 0;
 }
+
+.access-note {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #666;
+}

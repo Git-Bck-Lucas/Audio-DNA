@@ -55,6 +55,12 @@ function App() {
             <img src={heroImage} alt="Sigmund Freud und Lucas nebeneinander in einem Musikstudio" className="hero-image" />
             <h1>Audio DNA</h1>
             <button onClick={handleLogin}>Login mit Spotify</button>
+            <p className="access-note">
+              Die App läuft aktuell im Spotify Development Mode — nur eingetragene Test-Accounts können sich
+              einloggen. Willst du deine eigene Analyse sehen? Schick mir kurz deinen Namen und deine
+              Spotify-E-Mail an <a href="mailto:kontakt@lucas-beck.de">kontakt@lucas-beck.de</a>, dann trage ich
+              dich ein.
+            </p>
           </main>
         )
 
