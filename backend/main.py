@@ -27,7 +27,13 @@ app.add_middleware(
     secret_key=settings.SESSION_SECRET_KEY,
     https_only=settings.COOKIE_SECURE,
     same_site='lax',
-    max_age=60*60*24*7
+    # 1 Tag statt 7. Die Session ist das einzige, was die Identitaet des Nutzers
+    # traegt -- je laenger sie lebt, desto laenger ueberlebt auch ein falsch
+    # zugeordnetes Cookie einen bereits ausgelieferten Fix. Genau das ist passiert:
+    # eine Session aus der Zeit vor dem Token-Cache-Fix war Tage spaeter noch gueltig
+    # und wies eine fremde Person als User 1 aus. Kuerzere Lebensdauer begrenzt das
+    # Zeitfenster. Preis: haeufigeres Neu-Einloggen, bei dieser Nutzungsfrequenz ok.
+    max_age=60*60*24
 )
 
 app.include_router(spotify_router, prefix="/api/v1")
