@@ -12,9 +12,10 @@ type AnalysisFlowState =
 
 type Props = {
   onLogout: () => void
+  displayName: string | null
 }
 
-export function Dashboard({ onLogout }: Props) {
+export function Dashboard({ onLogout, displayName }: Props) {
   const [flow, setFlow] = useState<AnalysisFlowState>({ phase: 'idle' })
 
   async function handleModeSelect(mode: Mode) {
@@ -59,7 +60,9 @@ export function Dashboard({ onLogout }: Props) {
       )}
 
       <p className="account-line">
-        Eingeloggt · <button onClick={onLogout}>Logout</button>
+        {displayName ? <>Eingeloggt als <strong>{displayName}</strong></> : 'Eingeloggt'}
+        {' · '}
+        <button onClick={onLogout}>Logout</button>
       </p>
     </main>
   )

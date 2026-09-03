@@ -6,6 +6,9 @@ Mode = Literal["science", "lucas"]
 
 class UserResponse(BaseModel):
     created_at: datetime
+    # Wird NICHT in der DB gehalten (siehe services/pseudonymization.py), sondern pro
+    # Aufruf frisch bei Spotify geholt. None, wenn Spotify gerade nicht erreichbar ist.
+    display_name: str | None = None
 
     model_config = {"from_attributes": True}
     

@@ -2,6 +2,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL
 
 export type MeResponse = {
   created_at: string
+  // Kommt live von Spotify, wird serverseitig nicht gespeichert. null, wenn die
+  // Spotify-API beim /me-Aufruf nicht erreichbar war.
+  display_name: string | null
 }
 
 export async function fetchMe(): Promise<MeResponse | null> {

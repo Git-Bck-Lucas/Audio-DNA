@@ -20,7 +20,7 @@ function App() {
     fetchMe()
       .then((me) => {
         if (me) {
-          dispatch({ type: 'ME_OK', requestId })
+          dispatch({ type: 'ME_OK', requestId, displayName: me.display_name })
         } else {
           dispatch({ type: 'ME_UNAUTHENTICATED', requestId })
         }
@@ -76,7 +76,7 @@ function App() {
         return <p>Weiterleitung zu Spotify …</p>
 
       case 'authenticated':
-        return <Dashboard onLogout={handleLogout} />
+        return <Dashboard onLogout={handleLogout} displayName={state.displayName} />
 
       case 'loggingOut':
         return <p>Wird ausgeloggt …</p>
