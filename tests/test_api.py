@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import pytest
 from httpx import AsyncClient, ASGITransport # Http Client für API Tests
 from unittest.mock import patch, MagicMock  # Ersetzt Funktionen/Objekte temporär
@@ -174,3 +175,55 @@ async def test_rate_limit_returns_429(mock_llm, mock_spotify_class, mock_create_
     assert statuses[:MAX_REQUESTS] == [200] * MAX_REQUESTS   # erste 5 ok
     assert statuses[MAX_REQUESTS] == 429                     # der 6. abgewiesen
 
+
+
+@pytest.fixture
+def authenticated_user_with_created_at():
+    """Wie authenticated_user, aber mit echtem created_at.
+
+    /me gibt created_at im Response-Model zurueck -- ein blanker MagicMock wuerde
+    die Pydantic-Validierung nicht passieren.
+    """
+    app.dependency_overrides[get_current_user] = lambda: MagicMock(
+        id=1, created_at=datetime(2026, 4, 30, tzinfo=timezone.utc)
+    )
+    yield
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+@patch('backend.api.v1.spotify.Spotify')
+@patch('backend.api.v1.spotify.get_valid_access_token')
+async def test_me_returns_spotify_display_name(
+    mock_get_valid_token, mock_spotify_class, authenticated_user_with_created_at
+):
+    """/me reicht den Spotify-Anzeigenamen durch, ohne ihn zu speichern."""
+    mock_get_valid_token.return_value = "fake-token"
+    mock_spotify_class.return_value.current_user.return_value = {
+        "id": "lucas_1095_", "display_name": "Lucas"
+    }
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/api/v1/spotify/me")
+
+    assert response.status_code == 200
+    assert response.json()["display_name"] == "Lucas"
+
+
+@pytest.mark.asyncio
+@patch('backend.api.v1.spotify.get_valid_access_token')
+async def test_me_survives_spotify_failure(
+    mock_get_valid_token, authenticated_user_with_created_at
+):
+    """Faellt Spotify aus, bleibt der Nutzer eingeloggt -- nur ohne Namen.
+
+    /me ist der Auth-Check des Frontends. Wuerde er wegen einer reinen
+    Anzeige-Information 500en, waere der Nutzer faelschlich ausgeloggt.
+    """
+    mock_get_valid_token.side_effect = Exception("Spotify nicht erreichbar")
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/api/v1/spotify/me")
+
+    assert response.status_code == 200
+    assert response.json()["display_name"] is None

@@ -11,12 +11,16 @@ from fastapi.responses import RedirectResponse
 
 from backend.db.session import get_db
 from backend.db.repository import get_user_by_spotify_id, create_user, update_user_tokens
-from backend.services.spotify_auth_service import build_spotify_oauth
+from backend.services.spotify_auth_service import build_spotify_oauth, get_valid_access_token
 from backend.config import settings
 from backend.api.v1.schemas import UserResponse
 from backend.db.models import User
 from backend.api.dependencies import get_current_user
 from backend.services.pseudonymization import hash_spotify_id
+
+import logging
+
+logger = logging.getLogger("audio_dna.spotify")
 # Router for everything which is connected to spotify 
 # All endpoints get /spotify
 
@@ -101,5 +105,23 @@ async def callback(
     return RedirectResponse(url=settings.FRONTEND_URL)
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(user: User = Depends(get_current_user)) -> User:
-    return user
+async def get_me(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> UserResponse:
+    # Der Anzeigename wird bewusst nicht gespeichert -- in der DB steht nur der HMAC
+    # der Spotify-ID. Hier wird er pro Aufruf frisch geholt und nur durchgereicht.
+    # Zweck: Das Frontend soll zeigen koennen, WESSEN Sitzung gerade laeuft. Ohne das
+    # ist eine fremde (z.B. veraltete) Session fuer den Nutzer unsichtbar.
+    display_name: str | None = None
+    try:
+        access_token = get_valid_access_token(db, user)
+        profile = Spotify(auth=access_token).current_user()
+        display_name = profile.get("display_name") or profile.get("id")
+    except Exception:
+        # Best effort: /me ist der Auth-Check des Frontends. Er darf nicht scheitern,
+        # nur weil eine reine Anzeige-Information nicht zu holen war -- der Nutzer
+        # bleibt eingeloggt, es fehlt dann eben der Name.
+        logger.warning("Spotify-Anzeigename konnte nicht geladen werden", exc_info=True)
+
+    return UserResponse(created_at=user.created_at, display_name=display_name)

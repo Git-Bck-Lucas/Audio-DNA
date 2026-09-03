@@ -2,14 +2,14 @@ export type AuthState =
   | { status: 'checking'; requestId: number }
   | { status: 'anonymous'; requestId: number }
   | { status: 'redirecting'; requestId: number }
-  | { status: 'authenticated'; requestId: number }
+  | { status: 'authenticated'; requestId: number; displayName: string | null }
   | { status: 'loggingOut'; requestId: number }
   | { status: 'error'; requestId: number; message: string }
 
 export type AuthEvent =
   | { type: 'MOUNT' }
   | { type: 'REMOUNT' }
-  | { type: 'ME_OK'; requestId: number }
+  | { type: 'ME_OK'; requestId: number; displayName: string | null }
   | { type: 'ME_UNAUTHENTICATED'; requestId: number }
   | { type: 'ME_NETWORK_ERROR'; requestId: number }
   | { type: 'LOGIN_CLICKED' }
@@ -32,7 +32,7 @@ export function authReducer(state: AuthState, event: AuthEvent): AuthState {
     // ueberschreiben. Validiert im Prototyp unter prototypes/auth-state-machine.prototype.html
     case 'ME_OK':
       if (state.status !== 'checking' || event.requestId !== state.requestId) return state
-      return { status: 'authenticated', requestId: state.requestId }
+      return { status: 'authenticated', requestId: state.requestId, displayName: event.displayName }
 
     case 'ME_UNAUTHENTICATED':
       if (state.status !== 'checking' || event.requestId !== state.requestId) return state
