@@ -1,4 +1,5 @@
-import heroImage from '../assets/freud-lucas.png'
+import heroLarge from '../assets/hero.webp'
+import heroSmall from '../assets/hero-750.webp'
 import { DemoVideo } from './DemoVideo'
 import './Landing.css'
 
@@ -26,7 +27,13 @@ export function Landing({ onLogin }: Props) {
 
       <div className="hero">
         <figure className="hero__fig">
-          <img src={heroImage} alt="Sigmund Freud und Lucas nebeneinander in einem Musikstudio" />
+          <img
+            src={heroLarge}
+            srcSet={`${heroSmall} 750w, ${heroLarge} 1086w`}
+            /* Desktop: linke Seitenhaelfte (46vw). Handy: volle Breite. */
+            sizes="(max-width: 900px) 100vw, 46vw"
+            alt="Sigmund Freud und Lucas nebeneinander in einem Musikstudio"
+          />
         </figure>
 
         <div className="hero__copy appear">

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import thumbnail from '../assets/hero-band.jpg'
+import thumbnail from '../assets/hero-band.webp'
 import './DemoVideo.css'
 
 const VIDEO_ID = 'L6XVxHRaapA'
