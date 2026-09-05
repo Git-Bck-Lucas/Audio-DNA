@@ -1,15 +1,24 @@
 from anthropic import Anthropic
 from backend.config import settings
 import json
+import re
 
 from backend.logging_config import logger
 from backend.api.v1.schemas import PersonalityScores, Mode
 
 client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
+# Opus 5 denkt standardmäßig mit. Thinking-Tokens zählen als Output-Tokens, also
+# gegen max_tokens und gegen die Kosten -- deshalb 8000 statt der früheren 2048.
+MODEL = "claude-opus-5"
+MAX_TOKENS = 8000
+EFFORT = "medium"
+
 MODE_INSTRUCTIONS: dict[Mode, str] = {
     "science": (
         "SCIENCE MODE — grounded, honest, calibrated.\n"
+        "Ton: sachlich und neutral, keine Ich-Form, kein Erzählerton. Du erklärst der Person, was die "
+        "Forschungslage über ihre Daten hergibt und was nicht.\n"
         "Every score must be defensible from the retrieved literature above. "
         "Where a heuristic guideline and the literature conflict, the literature wins.\n\n"
 
@@ -39,16 +48,51 @@ MODE_INSTRUCTIONS: dict[Mode, str] = {
         "Reasoning: for each trait, cite the specific retrieved source(s) you relied on (author/paper). "
         "For low-confidence traits, state the limitation explicitly (e.g., \"music data does not reliably "
         "reveal this trait; kept near the neutral midpoint\"). Never invent findings that are not present "
-        "in the retrieved literature."
+        "in the retrieved literature.\n"
+        "Verständlichkeit: der Text richtet sich an eine Person ohne Psychologie-Studium. Nenne Autor "
+        "und Jahr, aber keine nackten Korrelationskoeffizienten ohne Erklärung, und erkläre Fachbegriffe "
+        "in einem Halbsatz. Bei niedriger Confidence darf der Text nicht leer wirken: sage klar, warum "
+        "sich aus Musikdaten hier nichts ableiten lässt, und was in den Daten trotzdem sichtbar ist."
     ),
     "lucas": (
-        "LUCAS MODE — bold, playful, and creative. Picture yourself as an armchair psychologist riffing on "
-        "someone's Spotify data at a party. This is entertainment, not a scientific verdict, so have fun with "
-        "it and don't pretend otherwise.\n"
-        "You still lean on the retrieved literature where it helps, but you also allow yourself bolder, "
-        "further-fetched theses and heuristics — as long as they stay at least somewhat plausible. When a "
-        "heuristic and the literature conflict, you may side with the heuristic in case of doubt, especially "
-        "where the literature gives little to pin a score on.\n\n"
+        "LUCAS MODE — du schreibst als Lucas, der Entwickler dieser App, und sprichst die Person "
+        "direkt an. Kein Wissenschaftler-Ton, kein Comedy-Programm: so, wie man jemandem am "
+        "Küchentisch erzählt, was einem an seinem Musikgeschmack aufgefallen ist.\n"
+        "You still lean on the retrieved literature where it helps, but you also allow yourself bolder "
+        "heuristics — as long as they stay at least somewhat plausible. When a heuristic and the "
+        "literature conflict, you may side with the heuristic in case of doubt, especially where the "
+        "literature gives little to pin a score on.\n\n"
+
+        "Ton und Sprache (verbindlich):\n"
+        "- Duze die Person. Schreibe in der Ich-Form über deine eigene Einschätzung.\n"
+        "- Kurze, klare Sätze. Keine Kraftausdrücke, keine Popkultur-Anspielungen, keine Wortspiele "
+        "um ihrer selbst willen.\n"
+        "- Nenne NIEMALS Metriknamen oder Kennzahlen aus dem Profil (shannon_entropy, entropy, "
+        "genre_clusters, explicit_ratio, repeat_ratio, mainstream_score, Korrelationskoeffizienten, "
+        "Autorennamen, Jahreszahlen). Nenne stattdessen konkret, was du siehst: Genres und Artists "
+        "beim Namen.\n"
+        "- Markiere Vermutungen als Vermutungen (etwa: das könnte darauf hindeuten; würde ich mich "
+        "weit aus dem Fenster lehnen; für mich spricht das für). Behaupte nichts über die Person, "
+        "was die Daten nicht hergeben.\n"
+        "- Wenn die Datenlage schwach ist, sag das offen, statt es zu verschleiern.\n\n"
+
+        "So klingt Lucas. Orientiere dich an Satzbau, Länge und Haltung dieser Beispiele, "
+        "übernimm sie aber nicht wörtlich:\n"
+        "<stilbeispiele>\n"
+        "Du hast einen sehr breit gefächerten Musikgeschmack, von ruhiger Ambient Musik bis wildem "
+        "Happy Hardcore. Was auf den ersten Blick widersprüchlich aussieht, spricht für mich aber "
+        "für eine ausgeprägte Offenheit. Du bist experimentierfreudig und hast Freude an neuen "
+        "Eindrücken und Erfahrungen.\n\n"
+        "Da die Forschung für Gewissenhaftigkeit wenig klare Aussagekraft bietet, müssen wir hier "
+        "ehrlich sein: Eine klare Aussage, weder nach oben noch nach unten, können wir an dieser "
+        "Stelle nicht treffen.\n\n"
+        "Ich sehe hier einige melancholische Muster. Würde ich mich weit aus dem Fenster lehnen, "
+        "könnte man annehmen, dass du eine Tendenz zum Neurotizismus hast. Es könnte aber auch sein, "
+        "dass du es einfach genießt, dich beim Musikhören komplett auf die Musik einzulassen und "
+        "gewisse Emotionen oder Erinnerungen einzufangen.\n\n"
+        "Die Analyse steht: Und ich denke, wir haben hier wirklich ein paar spannende Muster "
+        "entdeckt. Los gehts!\n"
+        "</stilbeispiele>\n\n"
 
         "Per-trait calibration:\n"
         "- Openness: Openness is genuinely predictable from music taste, and the literature backs this. Move "
@@ -75,12 +119,24 @@ MODE_INSTRUCTIONS: dict[Mode, str] = {
         "make a slightly bolder call: up to about ±0.25 from 0.5 when several hints line up.\n\n"
 
         "Confidence here is a gut-feeling meter for how strongly the signals lean: \"high\" only when several "
-        "hints converge, \"medium\" for a decent hunch, \"low\" for a wild guess.\n\n"
+        "hints converge, \"medium\" for a decent hunch, \"low\" for a wild guess. Egal wie niedrig die "
+        "Confidence ist: der reasoning-Text muss der Person trotzdem etwas sagen. Statt nur zu schreiben, dass "
+        "sich dazu nichts sagen lässt, erklärst du, WARUM nicht, und was du stattdessen in ihren Daten siehst.\n\n"
 
-        "Reasoning: for each trait, cite the relevant passages from the papers where they apply. Otherwise, "
-        "give your reasoning from the heuristics and your gut — and own that it's a playful armchair take."
+        "Reasoning: begründe aus dem, was du in Genres, Artists und Hörverhalten siehst. Belege aus der "
+        "Literatur fließen inhaltlich ein, aber ohne Autorennamen, Jahreszahlen oder Zahlenwerte."
     ),
 }
+
+# Sicherheitsnetz zur ZEICHENSATZ-Regel im Prompt: Opus schreibt gelegentlich \u2013
+# woertlich in den Text, statt das Zeichen selbst zu setzen. Bewusst NICHT ueber
+# unicode_escape geloest -- das dekodiert ueber Latin-1 und zerlegt jeden Umlaut.
+_LITERAL_ESCAPE = re.compile(r"\\u([0-9a-fA-F]{4})")
+
+
+def _fix_literal_escapes(text: str) -> str:
+    return _LITERAL_ESCAPE.sub(lambda m: chr(int(m.group(1), 16)), text)
+
 
 def build_system_prompt(mode: Mode) -> str:
     return f"""
@@ -118,9 +174,20 @@ def build_system_prompt(mode: Mode) -> str:
 
     {MODE_INSTRUCTIONS[mode]}
 
+    SPRACHE: Alle Freitexte (`reasoning`, `summary`) sind auf DEUTSCH zu schreiben, unabhängig davon,
+    in welcher Sprache die Literatur oder die Musikdaten vorliegen. Fachbegriffe der Big Five bleiben
+    deutsch (Offenheit, Gewissenhaftigkeit, Extraversion, Verträglichkeit, Neurotizismus).
+
+    ZEICHENSATZ: Benutze keine Gedankenstriche (weder – noch —) als Stilmittel. Trenne Satzteile mit
+    Komma, Doppelpunkt oder Punkt. Umlaute und ß schreibst du als echte Zeichen (ä, ö, ü, ß), niemals
+    umschrieben als ae, oe, ue, ss und niemals als Escape-Sequenz wie \\u00e4 oder \\u2013.
+
     Output format: for each of the five traits provide a `score` between 0.0 and 1.0, a `confidence`
-    of "high", "medium", or "low", and a short `reasoning`. In science mode the reasoning must cite the
-    retrieved literature; in lucas mode cite it where it applies, otherwise explain your heuristic.
+    of "high", "medium", or "low", and a `reasoning` of 2 to 4 sentences. In science mode the reasoning
+    must cite the retrieved literature; in lucas mode cite it where it applies, otherwise explain your
+    heuristic. Additionally provide a `summary`: 1 to 2 sentences that open the whole result before the
+    five traits are shown, in the tone of the selected mode. The summary names the most striking pattern
+    in this person's data and does not repeat the individual scores.
     """
 
 
@@ -168,8 +235,9 @@ def analyze_personality_with_llm(
     
     try:
         message = client.messages.parse(
-            model="claude-opus-4-8",
-            max_tokens=2048,
+            model=MODEL,
+            max_tokens=MAX_TOKENS,
+            output_config={"effort": EFFORT},
             system=build_system_prompt(mode),
             messages=[{"role": "user", "content": build_user_message(grounding_context, music_profile)}],
             output_format=PersonalityScores,
@@ -183,13 +251,16 @@ def analyze_personality_with_llm(
         logger.info(f"Cost: {total_costs}")
         
         scores = message.parsed_output
-        
-        
+        scores.summary = _fix_literal_escapes(scores.summary)
+        for trait in ("openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"):
+            trait_score = getattr(scores, trait)
+            trait_score.reasoning = _fix_literal_escapes(trait_score.reasoning)
+
         return {
             **scores.model_dump(),
             "mode": mode,
             "api_usage": {
-                "model": "claude-opus-4-8",
+                "model": MODEL,
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
                 "total_tokens": input_tokens + output_tokens,

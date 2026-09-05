@@ -41,6 +41,7 @@ def test_analyze_personality_with_llm(mock_client):
         extraversion=TraitScore(score=0.7, confidence="medium", reasoning="Test reasoning"),
         agreeableness=TraitScore(score=0.5, confidence="low", reasoning="Test reasoning"),
         neuroticism=TraitScore(score=0.4, confidence="low", reasoning="Test reasoning"),
+        summary="Test summary",
     )
     mock_message.usage.input_tokens = 500
     mock_message.usage.output_tokens = 100
