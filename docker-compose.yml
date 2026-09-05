@@ -17,6 +17,10 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      # Beim Start laedt das SentenceTransformer-Modell fuer das RAG-Retrieval,
+      # das dauert rund 90s. Ohne start_period gibt der Healthcheck vorher auf und
+      # der Container gilt nach jedem Deploy erst mal als unhealthy.
+      start_period: 120s
   db:
     image: pgvector/pgvector:pg16
     ports:
