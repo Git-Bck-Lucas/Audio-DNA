@@ -1,59 +1,100 @@
-.mode-toggle {
-  position: relative;
-  max-width: 420px;
-  margin: 0 auto;
-  line-height: 0;
+.mode-choice {
+  text-align: left;
 }
 
-.mode-toggle img {
+.mode-choice__image {
   display: block;
   width: 100%;
-  height: auto;
+  max-width: 420px;
+  margin: 0 auto 28px;
   border-radius: 8px;
 }
 
-.mode-toggle__half {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  border: none;
-  background: transparent;
-  cursor: pointer;
+.mode-choice__heading {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.25;
+}
+
+.mode-choice__note {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #8b8379;
+}
+
+.mode-choice__list {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.mode-card {
+  border: 1px solid #e3ddd4;
+  border-radius: 14px;
+  padding: 16px 18px;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.mode-card:hover,
+.mode-card:focus-within {
+  border-color: #b4472a;
+}
+
+.mode-card__row {
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.mode-toggle__half--left {
-  left: 0;
+.mode-card__main {
+  flex: 1;
+  display: block;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
-.mode-toggle__half--right {
-  left: 50%;
+.mode-card__name {
+  display: block;
+  font-weight: 650;
+  font-size: 17px;
 }
 
-.mode-toggle__half span {
-  color: white;
-  font-weight: 600;
-  font-size: 15px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  transition:
-    background 0.15s,
-    border-color 0.15s;
+.mode-card__subtitle {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: #55504a;
 }
 
-.mode-toggle__half:hover span,
-.mode-toggle__half:focus-visible span {
-  background: rgba(0, 0, 0, 0.75);
-  border-color: white;
+.mode-card__info {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #e3ddd4;
+  background: #f7f4ef;
+  color: #55504a;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
 }
 
-.mode-toggle__half:focus-visible {
-  outline: 2px solid white;
-  outline-offset: -2px;
+.mode-card__info:hover {
+  border-color: #b4472a;
+  color: #b4472a;
+}
+
+.mode-card__detail {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #e3ddd4;
+  font-size: 14px;
+  color: #55504a;
 }

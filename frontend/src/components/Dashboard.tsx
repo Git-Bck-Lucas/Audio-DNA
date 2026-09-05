@@ -2,12 +2,11 @@ import { useState } from 'react'
 import { fetchAnalysis, RateLimitError, type AnalysisResult, type Mode } from '../api/client'
 import { ModeToggle } from './ModeToggle'
 import { ResultView } from './ResultView'
-import { SourceList } from './SourceList'
 
 type AnalysisFlowState =
   | { phase: 'idle' }
   | { phase: 'loading' }
-  | { phase: 'success'; result: AnalysisResult }
+  | { phase: 'success'; result: AnalysisResult; mode: Mode }
   | { phase: 'error'; message: string }
 
 type Props = {
@@ -22,7 +21,7 @@ export function Dashboard({ onLogout, displayName }: Props) {
     setFlow({ phase: 'loading' })
     try {
       const result = await fetchAnalysis(mode)
-      setFlow({ phase: 'success', result })
+      setFlow({ phase: 'success', result, mode })
     } catch (err) {
       if (err instanceof RateLimitError) {
         const minutes = err.retryAfterSeconds ? Math.ceil(err.retryAfterSeconds / 60) : null
@@ -53,8 +52,7 @@ export function Dashboard({ onLogout, displayName }: Props) {
 
       {flow.phase === 'success' && (
         <>
-          <ResultView personality={flow.result.result.personality} />
-          <SourceList sources={flow.result.result.sources} />
+          <ResultView result={flow.result.result} mode={flow.mode} />
           <button onClick={() => setFlow({ phase: 'idle' })}>Zurück</button>
         </>
       )}

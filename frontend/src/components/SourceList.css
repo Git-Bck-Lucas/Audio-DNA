@@ -1,37 +1,69 @@
-.source-list {
-  max-width: 480px;
-  margin: 32px auto 0;
-  text-align: left;
-  border-top: 1px solid #e5e5e5;
-  padding-top: 20px;
+.sources {
+  margin-top: 14px;
+  border-top: 1px solid #e3ddd4;
+  padding-top: 14px;
 }
 
-.source-list__heading {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #666;
-  margin: 0 0 14px;
-}
-
-.source-list__entry {
-  margin: 0 0 16px;
-  padding-left: 14px;
-  border-left: 2px solid #ddd;
-}
-
-.source-list__entry p {
-  margin: 0;
+.sources__summary {
+  cursor: pointer;
   font-size: 14px;
-  font-style: italic;
-  color: #333;
-  line-height: 1.5;
+  color: #55504a;
+  list-style: none;
 }
 
-.source-list__entry cite {
+.sources__summary::-webkit-details-marker {
+  display: none;
+}
+
+.sources__summary::before {
+  content: '› ';
+  color: #8b8379;
+}
+
+.sources[open] .sources__summary::before {
+  content: '⌄ ';
+}
+
+.sources__list {
+  margin-top: 16px;
+}
+
+.source + .source {
+  margin-top: 14px;
+}
+
+.source__title {
   display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  font-style: normal;
-  color: #777;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1a17;
+  text-decoration: none;
+}
+
+a.source__title::after {
+  content: ' ↗';
+  color: #b4472a;
+}
+
+a.source__title:hover {
+  color: #b4472a;
+  text-decoration: underline;
+}
+
+.source__meta {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: #8b8379;
+}
+
+/* Woertliche Ausschnitte aus englischen Fachtexten. Bewusst klein und ruhig gesetzt:
+   sie sind der Beleg, nicht der Inhalt. */
+.source__quote {
+  margin: 9px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f7f4ef;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #55504a;
 }

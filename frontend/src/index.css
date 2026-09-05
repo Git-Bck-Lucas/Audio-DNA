@@ -8,7 +8,9 @@ body {
 }
 
 main {
-  max-width: 480px;
+  /* Der Ergebnis-Report ist Fliesstext und braucht mehr Zeilenbreite als die
+     Landing-Page. Deren Elemente haben eigene, engere max-widths. */
+  max-width: 640px;
   margin: 40px auto;
   padding: 0 20px;
   text-align: center;
@@ -50,6 +52,11 @@ main {
 }
 
 .access-note {
+  /* Eigene, engere Breite: der Fliesstext der Landing-Page soll nicht die volle
+     Report-Breite ausnutzen. */
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
   margin-top: 20px;
   font-size: 13px;
   color: #666;

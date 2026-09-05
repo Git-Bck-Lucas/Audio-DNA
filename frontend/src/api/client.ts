@@ -45,6 +45,14 @@ export type PersonalityScores = {
   extraversion: TraitScore
   agreeableness: TraitScore
   neuroticism: TraitScore
+  // Ein bis zwei Saetze, die das Gesamtergebnis eroeffnen, bevor die fuenf Merkmale kommen.
+  summary: string
+}
+
+export type Diversity = {
+  total_genre_count: number
+  genre_clusters: number
+  shannon_entropy: number
 }
 
 export type Source = {
@@ -61,10 +69,14 @@ export type AnalysisResult = {
   result: {
     personality: PersonalityScores
     sources: Source[]
+    diversity: Diversity
     analysis_details: {
       top_artists: string[]
       genres_found: string[]
       artists_analyzed: number
+      // Kommt aus Spotifys Popularitaetsfeld und misst nicht, was ein Mensch unter
+      // Mainstream versteht. Fliesst schwach in die Analyse ein, wird aber bewusst
+      // nicht angezeigt.
       mainstream_score: number
     }
   }
