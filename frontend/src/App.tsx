@@ -3,7 +3,8 @@ import { authReducer, initialAuthState } from './state/authMachine'
 import { fetchLoginUrl, fetchMe, logout } from './api/client'
 import { Dashboard } from './components/Dashboard'
 import { Footer } from './components/Footer'
-import heroImage from './assets/freud-lucas.png'
+import { Landing } from './components/Landing'
+import { Notice } from './components/Notice'
 
 function App() {
   const [state, dispatch] = useReducer(authReducer, initialAuthState)
@@ -47,46 +48,27 @@ function App() {
   function renderContent() {
     switch (state.status) {
       case 'checking':
-        return <p>Lade …</p>
+        return <Notice text="Lade …" />
 
       case 'anonymous':
-        return (
-          <main>
-            <img src={heroImage} alt="Sigmund Freud und Lucas nebeneinander in einem Musikstudio" className="hero-image" />
-            <h1>Audio DNA</h1>
-            <button onClick={handleLogin}>Login mit Spotify</button>
-            <p className="access-note">
-              Die App läuft aktuell im Spotify Development Mode, nur eingetragene Test-Accounts können sich
-              einloggen. Willst du deine eigene Analyse sehen? Schick mir kurz deinen Namen und deine
-              Spotify-E-Mail an <a href="mailto:kontakt@lucas-beck.de">kontakt@lucas-beck.de</a>, dann trage ich
-              dich ein.
-            </p>
-            <h2>Demo</h2>
-            <iframe
-              className="demo-video"
-              src="https://www.youtube-nocookie.com/embed/L6XVxHRaapA"
-              title="Audio DNA Demo"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </main>
-        )
+        return <Landing onLogin={handleLogin} />
 
       case 'redirecting':
-        return <p>Weiterleitung zu Spotify …</p>
+        return <Notice text="Weiterleitung zu Spotify …" />
 
       case 'authenticated':
         return <Dashboard onLogout={handleLogout} displayName={state.displayName} />
 
       case 'loggingOut':
-        return <p>Wird ausgeloggt …</p>
+        return <Notice text="Wird ausgeloggt …" />
 
       case 'error':
         return (
-          <main>
-            <p>{state.message}</p>
-            <button onClick={() => dispatch({ type: 'RETRY' })}>Erneut versuchen</button>
-          </main>
+          <Notice text={state.message}>
+            <button className="btn btn--ghost" onClick={() => dispatch({ type: 'RETRY' })}>
+              Erneut versuchen
+            </button>
+          </Notice>
         )
     }
   }

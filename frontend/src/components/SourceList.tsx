@@ -1,5 +1,6 @@
 import type { Mode, Source } from '../api/client'
 import { PAPERS } from '../content/papers'
+import { Fold } from './Fold'
 import './SourceList.css'
 
 const QUOTE_LENGTH = 240
@@ -61,51 +62,57 @@ export function SourceList({ sources, mode }: Props) {
   const papers = groupByPaper(sources)
 
   return (
-    <section className="report__step">
-      <p className="report__step-label">Schritt 4 · Woher das kommt</p>
-      <p className="report__lead">
-        Die Einschätzung stützt sich auf {sources.length} Passagen aus {papers.length}{' '}
-        musikpsychologischen Arbeiten, die zu deinem Profil gesucht wurden.
-      </p>
+    <section className="report__section appear">
+      <p className="label report__section-label">Worauf das beruht</p>
 
-      <details className="sources" open={mode === 'science'}>
-        <summary className="sources__summary">Die zitierten Stellen im Wortlaut</summary>
+      <div className="col">
+        <p className="lead sources__lead">
+          Die Einschätzung stützt sich auf {sources.length} Passagen aus {papers.length}{' '}
+          musikpsychologischen Arbeiten, die zu deinem Profil gesucht wurden.
+        </p>
 
-        <div className="sources__list">
-          {papers.map((paper) => {
-            const meta = PAPERS[paper.key]
+        <Fold
+          id="sources"
+          label="Die zitierten Stellen im Wortlaut"
+          defaultOpen={mode === 'science'}
+          variant="inline"
+        >
+          <div className="sources">
+            {papers.map((paper) => {
+              const meta = PAPERS[paper.key]
 
-            return (
-              <article className="source" key={paper.key}>
-                {meta ? (
-                  <>
-                    <a
-                      className="source__title"
-                      href={`https://doi.org/${meta.doi}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {meta.title}
-                    </a>
-                    <p className="source__meta">
-                      {paper.author} · {meta.publication} · {paper.quotes.length}{' '}
-                      {paper.quotes.length === 1 ? 'Stelle' : 'Stellen'}
-                    </p>
-                  </>
-                ) : (
-                  <p className="source__title">{paper.author}</p>
-                )}
+              return (
+                <article className="source" key={paper.key}>
+                  {meta ? (
+                    <>
+                      <a
+                        className="source__title"
+                        href={`https://doi.org/${meta.doi}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {meta.title}
+                      </a>
+                      <p className="source__meta">
+                        {paper.author} · {meta.publication} · {paper.quotes.length}{' '}
+                        {paper.quotes.length === 1 ? 'Stelle' : 'Stellen'}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="source__title">{paper.author}</p>
+                  )}
 
-                {paper.quotes.slice(0, 2).map((quote, index) => (
-                  <blockquote className="source__quote" key={index}>
-                    „{formatQuote(quote)}“
-                  </blockquote>
-                ))}
-              </article>
-            )
-          })}
-        </div>
-      </details>
+                  {paper.quotes.slice(0, 2).map((quote, index) => (
+                    <blockquote className="source__quote" key={index}>
+                      „{formatQuote(quote)}“
+                    </blockquote>
+                  ))}
+                </article>
+              )
+            })}
+          </div>
+        </Fold>
+      </div>
     </section>
   )
 }

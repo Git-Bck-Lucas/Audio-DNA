@@ -1,0 +1,138 @@
+.wordmark {
+  position: absolute;
+  top: 26px;
+  left: 26px;
+  z-index: 3;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.86);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 46fr 54fr;
+  min-height: 100vh;
+}
+
+.hero__fig {
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__fig img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 28%;
+}
+
+/* Naht zur Textspalte weich auslaufen lassen, sonst steht dort eine harte
+   senkrechte Schnittkante zwischen Bild und Seite. */
+.hero__fig::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 26%;
+  background: linear-gradient(to right, rgba(13, 12, 11, 0), var(--bg));
+}
+
+.hero__copy {
+  align-self: center;
+  padding: 90px clamp(28px, 5vw, 76px) 90px clamp(20px, 2.5vw, 40px);
+  max-width: 34ch;
+}
+
+.hero__copy h1 {
+  font-size: clamp(34px, 4.4vw, 60px);
+  line-height: 1.04;
+  margin: 14px 0 18px;
+}
+
+.hero__copy p {
+  color: var(--ink-dim);
+  margin: 0 0 28px;
+}
+
+.steps-head {
+  padding-top: 72px;
+  padding-bottom: 14px;
+}
+
+/* Durchgehendes Band statt nebeneinandergestellter Kacheln: Bloecke mit
+   unterschiedlichem Inhalt werden nie von selbst gleich hoch. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.step {
+  padding: 26px 28px;
+}
+
+.step + .step {
+  border-left: 1px solid var(--line);
+}
+
+.step__n {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--muted);
+}
+
+.step__t {
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+.demo {
+  max-width: 720px;
+  margin: 60px auto 0;
+  padding: 0 22px;
+}
+
+.demo__label {
+  margin: 0 0 14px;
+}
+
+.demo__note {
+  margin-top: 44px;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .hero__fig {
+    height: 62vh;
+  }
+
+  .hero__fig::after {
+    inset: auto 0 0 0;
+    width: auto;
+    height: 34%;
+    background: linear-gradient(to bottom, rgba(13, 12, 11, 0), var(--bg));
+  }
+
+  .hero__copy {
+    padding: 34px 22px 24px;
+    max-width: none;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .step + .step {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}

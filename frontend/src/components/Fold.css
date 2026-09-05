@@ -1,0 +1,90 @@
+.fold--section {
+  padding-top: 76px;
+}
+
+.fold__summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+/* Die Sektionsvariante traegt dieselbe Haarlinien-Kapitaelchen-Zeile wie die
+   nicht klappbaren Abschnitte, damit die Gliederung des Reports einheitlich bleibt. */
+.fold--section .fold__summary {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 22px;
+}
+
+.fold--section .fold__summary::before,
+.fold--section .fold__summary::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* Reihenfolge explizit: Linie, Kapitaelchen, Linie, dann der Hinweis rechts aussen. */
+.fold--section .fold__summary::before {
+  order: 0;
+}
+
+.fold--section .fold__summary > .label {
+  order: 1;
+}
+
+.fold--section .fold__summary::after {
+  order: 2;
+}
+
+.fold--section .fold__hint {
+  order: 3;
+}
+
+.fold--inline .fold__summary {
+  justify-content: space-between;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-dim);
+}
+
+.fold--inline .fold__summary:hover {
+  color: var(--ember);
+}
+
+.fold__title {
+  font-size: 15px;
+}
+
+.fold__hint {
+  flex: 0 0 auto;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.fold__summary:hover .fold__hint {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.fold--section .fold__body {
+  padding-top: 26px;
+}
+
+.fold--inline .fold__body {
+  padding-top: 8px;
+}

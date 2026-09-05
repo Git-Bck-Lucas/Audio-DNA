@@ -1,0 +1,14 @@
+.notice {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 22px;
+  text-align: center;
+}
+
+.notice__text {
+  font-family: var(--serif);
+  font-size: 26px;
+  margin: 0 0 22px;
+  color: var(--ink-dim);
+}
