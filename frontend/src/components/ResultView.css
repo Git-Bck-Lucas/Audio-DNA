@@ -1,51 +1,198 @@
-.result-view {
-  max-width: 480px;
-  margin: 0 auto;
+.report {
   text-align: left;
 }
 
-.trait {
-  margin-bottom: 24px;
+.report__step + .report__step {
+  margin-top: 48px;
 }
 
-.trait__header {
+.report__step-label {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8b8379;
+}
+
+.report__title {
+  margin: 0 0 14px;
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.report__lead {
+  margin: 0 0 12px;
+  color: #55504a;
+}
+
+.report__summary {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.45;
+}
+
+.report__mode-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #8b8379;
+}
+
+/* ---------- Schritt 2: Datenpanel ---------- */
+
+.panel {
+  border: 1px solid #e3ddd4;
+  border-radius: 14px;
+  padding: 18px;
+  background: #fff;
+}
+
+.stats {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 6px;
+  gap: 26px;
+  flex-wrap: wrap;
 }
 
-.trait__label {
-  font-weight: 600;
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat__value {
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__label {
+  font-size: 13px;
+  color: #8b8379;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  border: 1px solid #e3ddd4;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 13px;
+  color: #55504a;
+  background: #f7f4ef;
+}
+
+/* ---------- Schritt 3: Merkmale ---------- */
+
+.traits {
+  margin-top: 28px;
+}
+
+.trait + .trait {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid #e3ddd4;
+}
+
+/* Schwach belegte Merkmale bleiben sichtbar, treten aber zurueck: sie zu verstecken
+   waere unehrlich, sie gleichwertig zu zeigen waere irrefuehrend. */
+.trait--weak {
+  opacity: 0.72;
+}
+
+.trait__name {
+  margin: 0;
+  font-size: 18px;
 }
 
 .trait__score {
   font-weight: 400;
+  font-size: 13px;
+  color: #8b8379;
   font-variant-numeric: tabular-nums;
-  color: #666;
 }
 
-.trait__confidence {
-  font-size: 12px;
-  color: #666;
+.trait__what {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #8b8379;
 }
 
-.trait__bar {
-  height: 8px;
+.scale {
+  margin: 12px 0 10px;
+}
+
+.scale__track {
+  position: relative;
+  height: 6px;
   border-radius: 999px;
-  background: #e5e5e5;
-  overflow: hidden;
+  background: #e6e0d7;
 }
 
-.trait__bar-fill {
-  height: 100%;
-  background: #1a1a1a;
+.scale__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
   border-radius: 999px;
+  background: #b4472a;
+}
+
+.scale__marker {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #b4472a;
+  border: 3px solid #fff;
+  transform: translate(-50%, -50%);
+}
+
+.trait--weak .scale__fill,
+.trait--weak .scale__marker {
+  background: #8b8379;
+}
+
+.scale__poles {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 7px 0 0;
+  font-size: 12.5px;
+  color: #8b8379;
+}
+
+.trait__verdict {
+  margin: 0;
+}
+
+.trait__evidence {
+  font-size: 13px;
+  color: #8b8379;
 }
 
 .trait__reasoning {
   margin: 8px 0 0;
-  font-size: 14px;
-  color: #444;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #55504a;
+}
+
+@media (max-width: 480px) {
+  .report__title {
+    font-size: 25px;
+  }
+
+  .report__summary {
+    font-size: 18px;
+  }
+
+  .scale__poles {
+    font-size: 12px;
+  }
 }
