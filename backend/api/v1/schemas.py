@@ -31,3 +31,6 @@ class PersonalityScores(BaseModel):
     extraversion: TraitScore
     agreeableness: TraitScore
     neuroticism: TraitScore
+    # Bewusst als letztes Feld: Structured Output wird in Feldreihenfolge erzeugt, das
+    # Modell schreibt die Zusammenfassung also NACH den fünf Einzelbegründungen.
+    summary: str
