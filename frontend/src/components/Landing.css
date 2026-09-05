@@ -106,6 +106,17 @@
 }
 
 @media (max-width: 900px) {
+  /* Auf schmalen Screens fuellt das Bild die ganze Breite -- die Wortmarke lag
+     dann direkt auf dem eingebrannten Zitat oben links. Also raus aus dem Bild
+     und in eine eigene Zeile darueber. */
+  .wordmark {
+    position: static;
+    display: block;
+    padding: 20px 22px 14px;
+    color: var(--ink-dim);
+    text-shadow: none;
+  }
+
   .hero {
     grid-template-columns: 1fr;
     min-height: 0;
