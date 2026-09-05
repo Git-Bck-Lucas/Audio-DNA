@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { Mode } from '../api/client'
-import freudLucas from '../assets/freud-lucas.png'
 import './ModeToggle.css'
 
 type ModeInfo = {
@@ -33,32 +32,38 @@ type Props = {
   onSelect: (mode: Mode) => void
 }
 
+/**
+ * Kein Bild auf diesem Screen: der Hero hat dieselbe Aufnahme gerade gross gezeigt,
+ * eine Wiederholung schwaecht beide. Die Nummern sind eine Aufzaehlung der Wahl, keine
+ * Schrittfolge -- der Report zaehlt bewusst nicht weiter.
+ */
 export function ModeToggle({ onSelect }: Props) {
   const [openDetail, setOpenDetail] = useState<Mode | null>(null)
 
   return (
-    <div className="mode-choice">
-      <img
-        className="mode-choice__image"
-        src={freudLucas}
-        alt="Sigmund Freud und Lucas nebeneinander, beide mit Zigarre"
-      />
-
+    <div className="mode-choice col">
+      <p className="label">Deine Wahl</p>
       <h2 className="mode-choice__heading">Wie soll ich dir das erklären?</h2>
-      <p className="mode-choice__note">Gleiche Analyse, gleiche Daten. Nur die Erklärung ist anders.</p>
+      <p className="small mode-choice__note">
+        Gleiche Analyse, gleiche Daten. Nur die Erklärung ist anders.
+      </p>
 
       <div className="mode-choice__list">
-        {(Object.keys(MODES) as Mode[]).map((mode) => (
-          <div className="mode-card" key={mode}>
-            <div className="mode-card__row">
-              <button type="button" className="mode-card__main" onClick={() => onSelect(mode)}>
-                <span className="mode-card__name">{MODES[mode].name}</span>
-                <span className="mode-card__subtitle">{MODES[mode].subtitle}</span>
+        {(Object.keys(MODES) as Mode[]).map((mode, index) => (
+          <div className="mode-item" key={mode}>
+            <div className="mode-item__row">
+              <span className="mode-item__num" aria-hidden="true">
+                0{index + 1}
+              </span>
+
+              <button type="button" className="mode-item__main" onClick={() => onSelect(mode)}>
+                <span className="mode-item__name">{MODES[mode].name}</span>
+                <span className="mode-item__subtitle">{MODES[mode].subtitle}</span>
               </button>
 
               <button
                 type="button"
-                className="mode-card__info"
+                className="mode-item__info"
                 aria-expanded={openDetail === mode}
                 aria-label={`Mehr zur ${MODES[mode].name}`}
                 onClick={() => setOpenDetail(openDetail === mode ? null : mode)}
@@ -67,7 +72,7 @@ export function ModeToggle({ onSelect }: Props) {
               </button>
             </div>
 
-            {openDetail === mode && <p className="mode-card__detail">{MODES[mode].detail}</p>}
+            {openDetail === mode && <p className="mode-item__detail">{MODES[mode].detail}</p>}
           </div>
         ))}
       </div>

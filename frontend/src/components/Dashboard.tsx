@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { fetchAnalysis, RateLimitError, type AnalysisResult, type Mode } from '../api/client'
+import { AnalysisProgress } from './AnalysisProgress'
 import { ModeToggle } from './ModeToggle'
+import { Notice } from './Notice'
 import { ResultView } from './ResultView'
 
 type AnalysisFlowState =
@@ -41,26 +43,34 @@ export function Dashboard({ onLogout, displayName }: Props) {
     <main>
       {flow.phase === 'idle' && <ModeToggle onSelect={handleModeSelect} />}
 
-      {flow.phase === 'loading' && <p>Analysiere deine Spotify-Daten …</p>}
+      {flow.phase === 'loading' && <AnalysisProgress />}
 
       {flow.phase === 'error' && (
-        <div>
-          <p>{flow.message}</p>
-          <button onClick={() => setFlow({ phase: 'idle' })}>Erneut versuchen</button>
-        </div>
+        <Notice text={flow.message}>
+          <button className="btn btn--ghost" onClick={() => setFlow({ phase: 'idle' })}>
+            Erneut versuchen
+          </button>
+        </Notice>
       )}
 
-      {flow.phase === 'success' && (
-        <>
-          <ResultView result={flow.result.result} mode={flow.mode} />
-          <button onClick={() => setFlow({ phase: 'idle' })}>Zurück</button>
-        </>
-      )}
+      {flow.phase === 'success' && <ResultView
+          result={flow.result.result}
+          mode={flow.mode}
+          onRestart={() => setFlow({ phase: 'idle' })}
+        />}
 
-      <p className="account-line">
-        {displayName ? <>Eingeloggt als <strong>{displayName}</strong></> : 'Eingeloggt'}
+      <p className="account-line col">
+        {displayName ? (
+          <>
+            Eingeloggt als <strong>{displayName}</strong>
+          </>
+        ) : (
+          'Eingeloggt'
+        )}
         {' · '}
-        <button onClick={onLogout}>Logout</button>
+        <button className="btn btn--text" onClick={onLogout}>
+          Logout
+        </button>
       </p>
     </main>
   )

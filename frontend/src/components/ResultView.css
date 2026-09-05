@@ -1,198 +1,244 @@
 .report {
-  text-align: left;
+  padding-bottom: 20px;
 }
 
-.report__step + .report__step {
-  margin-top: 48px;
-}
-
-.report__step-label {
-  margin: 0 0 10px;
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #8b8379;
+.report__head {
+  text-align: center;
+  padding: 80px 22px 0;
 }
 
 .report__title {
-  margin: 0 0 14px;
-  font-size: 30px;
-  line-height: 1.2;
-}
-
-.report__lead {
-  margin: 0 0 12px;
-  color: #55504a;
+  font-size: clamp(38px, 8vw, 76px);
+  line-height: 1;
+  margin: 14px 0 0;
 }
 
 .report__summary {
+  max-width: 24ch;
+  margin: 34px auto 0;
+  font-family: var(--serif);
+  font-size: clamp(21px, 3.2vw, 32px);
+  line-height: 1.3;
+}
+
+.report__section {
+  padding-top: 76px;
+}
+
+/* Kapitaelchen mit Haarlinie links und rechts. Gleiche Zeile wie in den
+   klappbaren Abschnitten, damit die Gliederung durchgehend gleich aussieht. */
+.report__section-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: var(--wide);
+  margin: 0 auto 26px;
+  padding: 0 22px;
+}
+
+.report__section-label::before,
+.report__section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.report__p {
+  margin: 0 0 12px;
+}
+
+.report__p:last-child {
+  margin-bottom: 0;
+}
+
+.report__intro-line,
+.report__legend {
   margin: 0;
-  font-size: 20px;
-  line-height: 1.45;
+  text-align: center;
 }
 
-.report__mode-note {
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: #8b8379;
-}
-
-/* ---------- Schritt 2: Datenpanel ---------- */
-
-.panel {
-  border: 1px solid #e3ddd4;
-  border-radius: 14px;
-  padding: 18px;
-  background: #fff;
-}
+/* ---------- Was in deinen Daten steht ---------- */
 
 .stats {
   display: flex;
-  gap: 26px;
+  justify-content: center;
+  gap: clamp(30px, 7vw, 90px);
   flex-wrap: wrap;
+  padding: 54px 20px 40px;
 }
 
 .stat {
-  display: flex;
-  flex-direction: column;
+  text-align: center;
 }
 
 .stat__value {
-  font-size: 26px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(44px, 8vw, 80px);
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .stat__label {
-  font-size: 13px;
-  color: #8b8379;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.chips {
+.report__chips-label {
+  text-align: center;
+  margin: 0 0 14px;
+}
+
+.report__chips {
+  justify-content: center;
+}
+
+/* ---------- Die Einschaetzung ---------- */
+
+.trait {
+  padding: 56px 22px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.trait:first-of-type {
+  margin-top: 40px;
+}
+
+.trait__in {
+  max-width: var(--wide);
+  margin: 0 auto;
+}
+
+.trait__head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chip {
-  border: 1px solid #e3ddd4;
-  border-radius: 999px;
-  padding: 4px 11px;
-  font-size: 13px;
-  color: #55504a;
-  background: #f7f4ef;
-}
-
-/* ---------- Schritt 3: Merkmale ---------- */
-
-.traits {
-  margin-top: 28px;
-}
-
-.trait + .trait {
-  margin-top: 30px;
-  padding-top: 30px;
-  border-top: 1px solid #e3ddd4;
-}
-
-/* Schwach belegte Merkmale bleiben sichtbar, treten aber zurueck: sie zu verstecken
-   waere unehrlich, sie gleichwertig zu zeigen waere irrefuehrend. */
-.trait--weak {
-  opacity: 0.72;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 .trait__name {
   margin: 0;
-  font-size: 18px;
+  font-size: clamp(26px, 4vw, 40px);
 }
 
 .trait__score {
-  font-weight: 400;
-  font-size: 13px;
-  color: #8b8379;
+  font-family: var(--serif);
+  font-size: clamp(26px, 4vw, 40px);
   font-variant-numeric: tabular-nums;
 }
 
 .trait__what {
-  margin: 3px 0 0;
-  font-size: 13px;
-  color: #8b8379;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 6px 0 0;
 }
 
+.trait__why {
+  margin: 22px 0 0;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  max-width: 62ch;
+}
+
+.trait__why strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---------- Skala ---------- */
+
 .scale {
-  margin: 12px 0 10px;
+  margin: 30px 0 12px;
 }
 
 .scale__track {
   position: relative;
-  height: 6px;
-  border-radius: 999px;
-  background: #e6e0d7;
+  height: 3px;
+  background: var(--line);
 }
 
-.scale__fill {
+.scale__mid {
   position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 999px;
-  background: #b4472a;
+  left: 50%;
+  top: -4px;
+  width: 1px;
+  height: 11px;
+  background: var(--line);
 }
 
-.scale__marker {
+.scale__dot {
   position: absolute;
   top: 50%;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #b4472a;
-  border: 3px solid #fff;
+  background: var(--ember);
   transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 4px rgba(201, 85, 47, 0.16), 0 0 18px 2px rgba(201, 85, 47, 0.45);
 }
 
-.trait--weak .scale__fill,
-.trait--weak .scale__marker {
-  background: #8b8379;
+/* Unsichere Merkmale: der Punkt wird unscharf und bekommt ein Band, statt per
+   Transparenz zurueckzutreten. Auf dunklem Grund frisst Transparenz den Wert weg,
+   und "unwichtig" ist nicht gemeint -- gemeint ist "nur ungefaehr bekannt". */
+.scale__band {
+  position: absolute;
+  top: 50%;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(201, 85, 47, 0), rgba(201, 85, 47, 0.55), rgba(201, 85, 47, 0));
+  filter: blur(8px);
+}
+
+.scale[data-confidence='medium'] .scale__dot {
+  box-shadow: 0 0 0 3px rgba(201, 85, 47, 0.12), 0 0 10px 1px rgba(201, 85, 47, 0.28);
+}
+
+.scale[data-confidence='low'] .scale__dot {
+  width: 13px;
+  height: 13px;
+  background: #9a8f83;
+  box-shadow: none;
+  filter: blur(1.6px);
+}
+
+.scale[data-confidence='low'] .scale__band {
+  background: linear-gradient(90deg, rgba(154, 143, 131, 0), rgba(154, 143, 131, 0.5), rgba(154, 143, 131, 0));
 }
 
 .scale__poles {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  margin: 7px 0 0;
-  font-size: 12.5px;
-  color: #8b8379;
+  gap: 14px;
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
 }
 
-.trait__verdict {
-  margin: 0;
+.report__restart {
+  text-align: center;
+  padding: 60px 22px 0;
 }
 
-.trait__evidence {
-  font-size: 13px;
-  color: #8b8379;
-}
-
-.trait__reasoning {
-  margin: 8px 0 0;
-  font-size: 15px;
-  line-height: 1.55;
-  color: #55504a;
-}
-
-@media (max-width: 480px) {
-  .report__title {
-    font-size: 25px;
+@media (max-width: 520px) {
+  .report__head {
+    padding-top: 56px;
   }
 
-  .report__summary {
-    font-size: 18px;
+  .trait {
+    padding: 40px 22px;
   }
 
   .scale__poles {
     font-size: 12px;
+    gap: 10px;
+  }
+
+  .trait__why {
+    font-size: 15.5px;
   }
 }

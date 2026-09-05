@@ -1,69 +1,48 @@
+.sources__lead {
+  margin: 0 0 20px;
+  text-align: center;
+}
+
 .sources {
-  margin-top: 14px;
-  border-top: 1px solid #e3ddd4;
-  padding-top: 14px;
+  padding-top: 8px;
 }
 
-.sources__summary {
-  cursor: pointer;
-  font-size: 14px;
-  color: #55504a;
-  list-style: none;
-}
-
-.sources__summary::-webkit-details-marker {
-  display: none;
-}
-
-.sources__summary::before {
-  content: '› ';
-  color: #8b8379;
-}
-
-.sources[open] .sources__summary::before {
-  content: '⌄ ';
-}
-
-.sources__list {
-  margin-top: 16px;
-}
-
-.source + .source {
-  margin-top: 14px;
+.source {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line-soft);
 }
 
 .source__title {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1c1a17;
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1.25;
   text-decoration: none;
 }
 
 a.source__title::after {
   content: ' ↗';
-  color: #b4472a;
+  color: var(--ember);
+  font-size: 14px;
 }
 
 a.source__title:hover {
-  color: #b4472a;
-  text-decoration: underline;
+  color: var(--ember);
 }
 
 .source__meta {
-  margin: 3px 0 0;
-  font-size: 12.5px;
-  color: #8b8379;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
 }
 
-/* Woertliche Ausschnitte aus englischen Fachtexten. Bewusst klein und ruhig gesetzt:
+/* Woertliche Ausschnitte aus englischen Fachtexten. Bewusst ruhig gesetzt:
    sie sind der Beleg, nicht der Inhalt. */
 .source__quote {
-  margin: 9px 0 0;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: #f7f4ef;
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: #55504a;
+  margin: 14px 0 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--ember-dim);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-dim);
 }
