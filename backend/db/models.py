@@ -30,7 +30,9 @@ class Chunks(Base):
     chunk_index = Column(Integer, nullable=False)
     text = Column(Text, nullable=False)
     embedding = Column(Vector(384), nullable=False)
-    # Metadaten fürs Hybrid-Retrieval: lexikalisch getaggte MUSIC-Dimensionen und Big-Five-Traits
+    # Metadaten fuers (aktuell abgeschaltete) gefilterte Retrieval: lexikalisch getaggte
+    # MUSIC-Dimensionen und Big-Five-Traits. Werden beim Ingest befuellt, zur Suchzeit aber
+    # nicht mehr gelesen — siehe search_similar_chunks und backend/rag/README.md Abschnitt 4b.
     # (befüllt beim Ingest via backend.rag.chunk_tagging). Ein Chunk kann zu mehreren gehören
     # oder zu keiner (dann leere Liste) -> Postgres-ARRAY, filterbar per "wert = ANY(spalte)".
     dimensions = Column(ARRAY(String), nullable=False, default=list)
