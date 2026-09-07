@@ -24,7 +24,8 @@ from backend.rag.dimension_queries import centroid_query, description_query, tra
 
 # Reihenfolge = didaktische Reihenfolge: von unschärfster (A) zu erwartet schärfster (C).
 # Jeder Eintrag: (Label, Query-Builder, Dimension-als-Filter?). Der letzte kombiniert die beste
-# Query-Strategie (C) mit dem Metadaten-Filter (Hybrid-Retrieval) — das ist der eigentliche Test.
+# Query-Strategie (C) mit dem Metadaten-Filter (filtered vector search, NICHT "hybrid" — das waere
+# dense + BM25 mit Fusion) — das ist der eigentliche Test.
 STRATEGIES = [
     ("A: stem-centroid   (DE-Genres, gemittelt)", centroid_query, False),
     ("B: description     (DE-Prosa)",             description_query, False),
