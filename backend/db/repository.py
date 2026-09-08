@@ -49,9 +49,16 @@ def search_similar_chunks(
     stattdessen die intuitivere Similarity = 1 - Distanz zurück (1.0 = perfekt, 0.0 = orthogonal),
     damit sich Treffer verschiedener Query-Strategien direkt vergleichen lassen.
 
-    Hybrid-Retrieval: Mit `dimension` und/oder `trait` wird die Vektorsuche VORHER auf Chunks
-    eingeschränkt, die im Metadaten-Tag die jeweilige Dimension/den Trait tragen ("wert = ANY(spalte)").
-    So verschwinden die generischen Chunks, die bei reiner Vektorsuche für jede Dimension oben landen.
+    Metadatengefiltertes Retrieval (filtered vector search): Mit `dimension` und/oder `trait` wird
+    die Vektorsuche VORHER auf Chunks eingeschränkt, die im Metadaten-Tag die jeweilige Dimension/den
+    Trait tragen ("wert = ANY(spalte)"). Das ist BEWUSST NICHT "Hybrid Retrieval" — der Begriff meint
+    die Fusion zweier Retrieval-Verfahren (dense + sparse/BM25 mit Rank-Fusion), hier gibt es nur
+    eines, das auf einer Teilmenge läuft.
+
+    ACHTUNG: Der Produktionspfad ruft OHNE Filter auf (retrieval_service.retrieve_grounding_context
+    reicht `use_filter` nicht durch). Gemessen in eval_retrieval.py: gefiltert faellt recall@5 von
+    1.00 auf 0.80, weil valide, aber ungetaggte Chunks ausgeschlossen werden. Der Filter lebt hier
+    nur noch als Messvariante.
     """
     distance = Chunks.embedding.cosine_distance(query_vector)
     query = db.query(Chunks, distance.label("distance"))

@@ -4,6 +4,20 @@ Diese Dokumentation erklärt die komplette Retrieval-Pipeline unter `backend/rag
 Modul tut, **warum** es so gebaut ist, welche Konzepte dahinterstehen, und was zuletzt geändert
 wurde. Zielgruppe: ich selbst in drei Monaten.
 
+> ## Produktionsstand in fünf Zeilen (Stand 2026-09-07)
+>
+> - Das Retrieval ist **reine Dense-Vektorsuche** über pgvector. Kein Hybrid Search (das wäre
+>   dense + BM25 mit Rank-Fusion), keine lexikalische Suche über `chunks`.
+> - Der **Metadatenfilter ist aus**. `retrieve_grounding_context` reicht `use_filter` nicht durch;
+>   der Parameter lebt nur noch als Messvariante in `eval_retrieval.py`. Grund: Abschnitt 4b.
+> - Der Produktionspfad ist **trait-orientiert**: 5 feste Queries aus `trait_queries.py`, je
+>   `top_k=2`, dedupliziert → 5 bis 10 Chunks ins Prompt. Der Dimensions-Pfad ist raus.
+> - Die Queries sind **nutzerunabhängig**. Das RAG personalisiert nichts, es liefert den
+>   allgemeinen Forschungsstand; personalisiert wird über das Musikprofil im Prompt. Cachebar.
+> - `genre_mapping.py` wird von **keiner** Produktionsstelle aufgerufen (nur seine Konstanten von
+>   den zwei Experiment-Modulen). Bleibt als Unterbau der Experimente und als Kandidat für ein
+>   Frontend-Feature liegen.
+
 ---
 
 ## 1. Wozu das Ganze? (Big Picture)
@@ -25,11 +39,12 @@ zerlegt, in Vektoren übersetzt („Embeddings") und in Postgres gespeichert. Be
 
 **Zwei getrennte Aufgaben in diesem Ordner, nicht verwechseln:**
 
-| Aufgabe | Modul | Input | Output |
-|---|---|---|---|
-| Genre → MUSIC-Dimension zuordnen | `genre_mapping.py` | ein Spotify-Genre-String (`"synthpop"`) | eine von 5 Dimensionen |
-| Literatur durchsuchbar machen | `load_documents`, `chunking`, `embed`, `chunk_tagging`, `ingest` | PDF/MD-Paper | getaggte, embeddete Chunks in der DB |
-| Passende Chunks finden | `dimension_queries`, `repository.search_similar_chunks` | eine Dimension | Top-k Belegstellen |
+| Aufgabe | Modul | Input | Output | im Produktionspfad? |
+|---|---|---|---|---|
+| Literatur durchsuchbar machen | `load_documents`, `chunking`, `embed`, `chunk_tagging`, `ingest` | PDF/MD-Paper | getaggte, embeddete Chunks in der DB | ja (offline, beim Ingest) |
+| Passende Chunks finden | `trait_queries`, `repository.search_similar_chunks` | ein Big-Five-Trait | Top-k Belegstellen | **ja** |
+| Passende Chunks finden (alter Pfad) | `dimension_queries`, `compare_query_strategies` | eine MUSIC-Dimension | Top-k Belegstellen | nein, nur Experiment |
+| Genre → MUSIC-Dimension zuordnen | `genre_mapping.py` | ein Spotify-Genre-String (`"synthpop"`) | eine von 5 Dimensionen | **nein** (siehe unten) |
 
 Das **MUSIC-Modell** (Rentfrow, Goldberg & Levitin 2011) sind 5 Musik-Präferenz-Dimensionen:
 **M**ellow, **U**npretentious, **S**ophisticated, **I**ntense, **C**ontemporary.
@@ -118,9 +133,18 @@ das Tag `Intense`, wenn er charakteristisches Vokabular enthält (`"intense"`, `
 Ein Chunk kann **mehrere** Tags tragen (die Meta-Analyse-Zusammenfassung nennt alle 5 Dimensionen)
 oder **keins** (reine Methodik-Absätze). `tag_chunk(text)` gibt `(dimensions, traits)` zurück.
 
-**Ergebnis an echten Daten:** 75% der Chunks bekommen *kein* Dimension-Tag — das sind genau die
-generischen Methodik-/Boilerplate-Absätze, die wir aus der dimensionsspezifischen Suche draußen
-haben wollen. (Gemessen bei 328 Chunks; nach zwei weiteren Papern hat der Korpus jetzt **514 Chunks**.)
+**Ergebnis an echten Daten (nachgemessen 2026-09-07 über alle 514 Chunks):**
+
+| | ohne Tag | Verteilung |
+|---|---|---|
+| `dimensions` | **70 %** (359/514) | Intense 103 · Sophisticated 83 · Contemporary 82 · Unpretentious 57 · Mellow 44 |
+| `traits` | **81 %** (418/514) | Openness 64 · Extraversion 47 · Conscientiousness 40 · Neuroticism 37 · Agreeableness 36 |
+
+Die ungetaggten Chunks sind überwiegend generische Methodik-Absätze, die man aus einer
+dimensionsspezifischen Suche draußen haben will. (Frühere Angabe „75 %" bezog sich auf 328 Chunks.)
+
+Die **81 % ohne Trait-Tag** sind die entscheidende Zahl für Abschnitt 4b: ein harter Trait-Filter
+wirft im Schnitt vier von fünf Chunks weg, bevor überhaupt gemessen wird.
 
 ### 3.5 `ingest.py` — alles zusammenführen
 Orchestriert: für jedes Dokument → laden → chunken → für jeden Chunk embedden **und taggen** →
@@ -162,11 +186,22 @@ return [(chunk, 1.0 - distance_value) for chunk, distance_value in rows]
 Zwei Änderungen:
 1. **Gibt jetzt `(Chunk, Similarity)`-Tupel zurück** statt nur Chunks — damit ich sehe, *wie gut*
    ein Treffer ist (und Strategien vergleichen kann).
-2. **Optionale Filter** `dimension`/`trait` → **Hybrid-Retrieval**.
+2. **Optionale Filter** `dimension`/`trait` → **metadatengefiltertes Retrieval**.
 
-> **Konzept Hybrid-Retrieval:** reine Vektorsuche = „semantisch am ähnlichsten". Hybrid =
+> **Konzept filtered vector search:** reine Vektorsuche = „semantisch am ähnlichsten". Gefiltert =
 > erst **hart filtern** nach Metadaten (nur Chunks mit Tag `Sophisticated`), *dann* innerhalb
 > dieser Teilmenge semantisch sortieren. Kombiniert Präzision (Filter) mit Semantik (Vektor).
+>
+> **Begriffskorrektur (2026-09-07):** Das hieß hier früher „Hybrid-Retrieval". Falsch. *Hybrid
+> Search* meint die **Fusion zweier Retrieval-Verfahren** — dense (Embeddings) plus sparse/
+> lexikalisch (BM25, `tsvector`) — deren Trefferlisten zusammengeführt werden, klassisch per
+> Reciprocal Rank Fusion. Hier gibt es nur **ein** Verfahren, das auf einer Teilmenge läuft; der
+> korrekte Name ist *filtered vector search* (so nennt es z.B. Qdrant). Im Backend existiert keine
+> lexikalische Suche über `chunks`; lexikalisch ist nur das **Tagging beim Ingest**, also
+> Schreibzeit, nicht Suchzeit.
+>
+> **Und: produktiv ist dieser Filter aus.** Siehe Abschnitt 4b. Der Produktionspfad ist reine
+> Dense-Vektorsuche.
 
 ### 3.8 `dimension_queries.py` (neu) — wie formuliere ich die Frage?
 
@@ -198,9 +233,12 @@ Strategie schärfere Treffer liefert.
 2. **B (deutsche Beschreibung) ist eine Sackgasse:** höherer Score als A, aber kaum trennschärfer —
    die deutsche Query greift im englischen Korpus immer denselben zentralen Chunk. Sprach-Mismatch.
 3. **C ist die richtige Richtung:** zieht inhaltstragende Befunde statt Methodik-Boilerplate.
-4. **Der Filter (Hybrid) bringt den strukturellen Gewinn:** 75% Boilerplate sind ausgeschlossen;
-   er hilft am meisten dort, wo der generische Chunk *nicht* dimensionsgetaggt war (Mellow,
-   Sophisticated verbessern sich deutlich).
+4. **Der Filter brachte auf dem Dimensions-Pfad einen strukturellen Gewinn:** die ungetaggten
+   Boilerplate-Chunks sind ausgeschlossen; er half am meisten dort, wo der generische Chunk *nicht*
+   dimensionsgetaggt war (Mellow, Sophisticated verbesserten sich deutlich).
+   > **Achtung, gilt nicht mehr für den Produktionspfad.** Dieser Punkt wurde an *Similarity-Scores*
+   > auf dem **Dimensions**-Pfad beurteilt. Auf dem trait-orientierten Produktionspfad, gemessen an
+   > *recall@k*, gilt das Gegenteil: gefiltert ist schlechter, der Filter ist aus. Siehe 4b.
 5. **Ehrliche Restgrenze = Chunking-Artefakt, kein Bug:** Die Schäfer-Zusammenfassung packt mehrere
    Korrelationen in einen großen Chunk. Der ist damit *korrekt* mit mehreren Dimensionen getaggt und
    taucht bei mehreren oben auf — er *ist* für alle relevant. Der nächste Hebel wäre feineres
@@ -224,9 +262,29 @@ gegen das Eval getunt.
 ### Produktionsentscheidung: nur Trait-Pfad, ungefiltert
 - **Dimensions-Pfad raus.** Empirisch (science-mode, gleiches Profil): identische Scores und gleich
   gute Reasonings, aber ~2x Kontext-Tokens (~21% teurer). Der Pfad zog überwiegend Hintergrund-Chunks.
-- **Filter aus.** Der Trait-Tag-Filter schließt valide, aber **ungetaggte** Chunks aus (z.B. der
-  Neuroticism-Beleg bei Schaefer, dessen Überschrift beim Chunking abgetrennt wurde). Ungefiltert
-  ist messbar besser. Der Filter kommt zurück, sobald das Chunking feiner ist.
+- **Filter aus.** Der Trait-Tag-Filter schließt valide, aber **ungetaggte** Chunks aus. Ungefiltert
+  ist messbar besser (`recall@5` 1.00 statt 0.80). Der Filter kommt zurück, sobald das Chunking
+  feiner ist — oder besser als *Soft Boost im Ranking* statt als hartes `WHERE`, damit ein
+  ungetaggter Chunk mit sehr hoher Similarity weiterhin gewinnen kann.
+
+  **Der konkrete Fall (nachgestellt 2026-09-07).** In `Schaefer_Mehlhorn_2017.md` schneidet der
+  Chunker mitten in eine Bullet-Liste:
+
+  ```
+  chunk 4 (Ende):   "- **Neuroticism:** No consistent relationship, despite theoretical expectations"
+  chunk 5 (Anfang): "Individual studies found links to Intense or Mellow music, but these did not
+                     replicate in aggregate."
+  ```
+
+  Chunk 5 trägt den Befund, enthält das Wort „Neuroticism" aber nicht mehr — getaggt ist er
+  deshalb nur mit `traits=['Openness']` (falsch-positiv, weil zufällig „Openness → Sophisticated"
+  im selben Chunk steht). Mit `trait='Neuroticism'` fliegt genau dieser Beleg raus, bevor die
+  Vektorsuche ihn sehen darf. Und sie *würde* ihn finden: die Neuroticism-Query in
+  `trait_queries.py` sagt fast wörtlich dasselbe.
+
+  **Merksatz:** Ein Prefilter kann einen Tagging-Fehler nicht reparieren, er zementiert ihn.
+  Das Tagging produziert hier beide Fehlerarten gleichzeitig (Chunk 5: False Negative für
+  Neuroticism, False Positive für Openness).
 - **Bonus:** Der Trait-Pfad ist **nutzer-unabhängig** (gleiche 5 Queries für alle) → das Grounding
   ist cachebar/vorberechenbar (nächster Kosten-Hebel).
 
@@ -291,7 +349,7 @@ tests + Threshold-Sweep), `python -m backend.rag.chunk_tagging` (Tagging an Beis
 | `dimension_queries.py` | **neu** | 3 Query-Strategien (Centroid / DE-Description / EN-Trait-Prosa), geschärfte Trait-Queries |
 | `compare_query_strategies.py` | **neu** | Vergleichs-Experiment A/B/C/C+Filter über alle Dimensionen |
 | `db/models.py` | geändert | `Chunks.dimensions`, `Chunks.traits` (ARRAY-Spalten) |
-| `db/repository.py` | geändert | `search_similar_chunks`: Similarity-Score + optionale Dimension/Trait-Filter |
+| `db/repository.py` | geändert | `search_similar_chunks`: Similarity-Score + optionale Dimension/Trait-Filter (produktiv nicht genutzt) |
 | `migrations/versions/c2d4e6f80a1b_*.py` | **neu** | Migration für die zwei neuen Spalten |
 | `documents/` | ergänzt | +2 Paper: Rentfrow/Goldberg/Levitin (2011), Anderson (2021) → 514 Chunks |
 | `trait_queries.py` | **neu** | Eine Query pro Big-Five-Trait (`big_five_query`), gegen das Eval getunt |
