@@ -83,7 +83,7 @@ export function ResultView({ result, mode, onRestart }: Props) {
         <div className="col">
           <p className="small report__legend">
             Der Punkt zeigt, wo du auf der Skala liegst. Je unschärfer er ist, desto dünner ist die
-            Forschungslage zu diesem Merkmal — die Lage ist dann eine Richtung, keine Messung.
+            Forschungslage zu diesem Merkmal. Die Lage ist dann eine Richtung, keine Messung.
           </p>
         </div>
 

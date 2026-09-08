@@ -41,7 +41,7 @@ export function Landing({ onLogin }: Props) {
           <h1>Was deine Musik über dich verrät</h1>
           <p>
             Audio DNA liest deine Spotify-Historie und schätzt daraus deine
-            Big-Five-Persönlichkeit — jede Aussage belegt mit Forschung aus der
+            Big-Five-Persönlichkeit. Jede Aussage belegt mit Forschung aus der
             Musikpsychologie.
           </p>
           <button className="btn btn--primary" onClick={onLogin}>
